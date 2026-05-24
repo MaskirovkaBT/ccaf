@@ -1,15 +1,28 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import ForceView from '../views/ForceView.vue'
+import SetupView from '../views/SetupView.vue'
+import SearchView from '../views/SearchView.vue'
 import MechView from '../views/MechView.vue'
 
 const routes = [
-  { path: '/', name: 'roster', component: ForceView },
+  { path: '/setup', name: 'setup', component: SetupView },
+  { path: '/', name: 'search', component: SearchView },
   { path: '/mech/:id', name: 'mech', component: MechView, props: true }
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.beforeEach((to) => {
+  const hasServer = !!localStorage.getItem('ccaf_api_url')
+  if (!hasServer && to.name !== 'setup') {
+    return { name: 'setup', replace: true }
+  }
+  if (hasServer && to.name === 'setup') {
+    return { name: 'search', replace: true }
+  }
+  return true
 })
 
 export default router

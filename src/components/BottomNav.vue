@@ -1,8 +1,8 @@
 <template>
   <nav class="bottom-nav">
-    <router-link to="/" class="nav-item" :class="{ active: $route.name === 'roster' }">
+    <router-link to="/" class="nav-item" :class="{ active: $route.name === 'search' }">
       <span class="nav-icon">☰</span>
-      <span>ROSTER</span>
+      <span>Поиск</span>
     </router-link>
     <div class="nav-item">
       <span class="nav-icon">⚙</span>

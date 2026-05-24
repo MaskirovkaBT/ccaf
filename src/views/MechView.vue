@@ -1,20 +1,19 @@
 <template>
   <div class="page">
-    <div v-if="mech" class="card">
+    <div v-if="unit" class="card">
       <div class="header">
-        <div class="back-btn" @click="$router.push('/')">← ROSTER</div>
+        <div class="back-btn" @click="$router.push('/')">← CATALOG</div>
         <div class="header-top">
           <div>
-            <div class="mech-name">{{ mech.name }}</div>
-            <div class="mech-variant">{{ mech.variant }}</div>
+            <div class="mech-name">{{ unit.title }}</div>
+            <div class="mech-variant">{{ unit.unit_type }} · SZ {{ unit.sz }}</div>
           </div>
-          <div class="type-badge">{{ mech.type }}</div>
+          <div class="type-badge">{{ unit.unit_type }}</div>
         </div>
         <div class="mech-meta">
-          <span>{{ mech.weight }}</span>
-          <span>{{ mech.weightClass }}</span>
-          <span>{{ mech.techBase }}</span>
-          <span>{{ mech.era }}</span>
+          <span>Role: {{ unit.role || '—' }}</span>
+          <span>PV {{ unit.pv }}</span>
+          <span>MV {{ unit.mv }}</span>
         </div>
       </div>
 
@@ -25,11 +24,11 @@
         <div class="pv-row">
           <div class="pv-box">
             <div class="pv-label">PV</div>
-            <div class="pv-value">{{ mech.pv }}</div>
+            <div class="pv-value">{{ unit.pv }}</div>
           </div>
           <div class="tmm-box">
-            <div class="pv-label">TMM</div>
-            <div class="pv-value tmm">{{ mech.tmm }}</div>
+            <div class="pv-label">SZ</div>
+            <div class="pv-value sz">{{ unit.sz }}</div>
           </div>
         </div>
       </div>
@@ -39,18 +38,15 @@
         <div class="stats-grid">
           <div class="stat-box">
             <div class="stat-label">Move</div>
-            <div class="stat-value small">{{ mech.move }}</div>
-            <div class="stat-sub">{{ mech.moveKmh }}</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Jump</div>
-            <div class="stat-value small" :class="{ inactive: !mech.jump }">{{ mech.jump || '—' }}</div>
-            <div class="stat-sub">{{ mech.jump ? '' : 'none' }}</div>
+            <div class="stat-value small">{{ unit.mv }}</div>
           </div>
           <div class="stat-box">
             <div class="stat-label">Role</div>
-            <div class="stat-value small role">{{ mech.role }}</div>
-            <div class="stat-sub">{{ mech.roleName }}</div>
+            <div class="stat-value small role">{{ unit.role }}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Type</div>
+            <div class="stat-value small">{{ unit.unit_type }}</div>
           </div>
         </div>
       </div>
@@ -58,26 +54,26 @@
       <div class="section">
         <div class="section-title">Damage</div>
         <div class="damage-grid">
-          <div class="damage-cell" :class="{ active: mech.damage.s > 0 }">
+          <div class="damage-cell" :class="{ active: unit.short > 0 }">
             <div class="damage-range">S</div>
-            <div class="damage-value" :class="{ zero: mech.damage.s === 0 }">{{ mech.damage.s }}</div>
+            <div class="damage-value" :class="{ zero: unit.short === 0 }">{{ unit.short }}</div>
           </div>
-          <div class="damage-cell" :class="{ active: mech.damage.m > 0 }">
+          <div class="damage-cell" :class="{ active: unit.medium > 0 }">
             <div class="damage-range">M</div>
-            <div class="damage-value" :class="{ zero: mech.damage.m === 0 }">{{ mech.damage.m }}</div>
+            <div class="damage-value" :class="{ zero: unit.medium === 0 }">{{ unit.medium }}</div>
           </div>
-          <div class="damage-cell" :class="{ active: mech.damage.l > 0 }">
+          <div class="damage-cell" :class="{ active: unit.long > 0 }">
             <div class="damage-range">L</div>
-            <div class="damage-value" :class="{ zero: mech.damage.l === 0 }">{{ mech.damage.l }}</div>
+            <div class="damage-value" :class="{ zero: unit.long === 0 }">{{ unit.long }}</div>
           </div>
-          <div class="damage-cell" :class="{ active: mech.damage.e > 0 }">
+          <div class="damage-cell" :class="{ active: unit.extreme > 0 }">
             <div class="damage-range">E</div>
-            <div class="damage-value" :class="{ zero: mech.damage.e === 0 }">{{ mech.damage.e }}</div>
+            <div class="damage-value" :class="{ zero: unit.extreme === 0 }">{{ unit.extreme }}</div>
           </div>
         </div>
         <div class="ov-row">
           <span>OV:</span>
-          <span class="ov-value">{{ mech.ov }}</span>
+          <span class="ov-value">{{ unit.ov }}</span>
         </div>
       </div>
 
@@ -87,23 +83,23 @@
           <div class="bar-container">
             <div class="bar-label">ARM</div>
             <div class="bar-track">
-              <div class="bar-fill" :style="{ width: barPct(mech.armor, 10) + '%' }"></div>
+              <div class="bar-fill" :style="{ width: barPct(unit.armor, 12) + '%' }"></div>
             </div>
-            <div class="bar-num">{{ mech.armor }}</div>
+            <div class="bar-num">{{ unit.armor }}</div>
           </div>
           <div class="bar-container">
             <div class="bar-label">STR</div>
             <div class="bar-track">
-              <div class="bar-fill struct" :style="{ width: barPct(mech.structure, 10) + '%' }"></div>
+              <div class="bar-fill struct" :style="{ width: barPct(unit.struc, 8) + '%' }"></div>
             </div>
-            <div class="bar-num">{{ mech.structure }}</div>
+            <div class="bar-num">{{ unit.struc }}</div>
           </div>
           <div class="bar-container">
             <div class="bar-label">THR</div>
             <div class="bar-track">
-              <div class="bar-fill thr" :style="{ width: barPct(mech.threshold, 6) + '%' }"></div>
+              <div class="bar-fill thr" :style="{ width: barPct(unit.threshold, 6) + '%' }"></div>
             </div>
-            <div class="bar-num">{{ mech.threshold }}</div>
+            <div class="bar-num">{{ unit.threshold }}</div>
           </div>
         </div>
       </div>
@@ -112,73 +108,56 @@
         <div class="section-title">Special Abilities</div>
         <div class="specials-list">
           <span
-            v-for="(s, i) in mech.specials"
+            v-for="(s, i) in parsedSpecials"
             :key="i"
             class="special-tag"
-            :class="s.type"
-          >{{ s.text }}</span>
+          >{{ s }}</span>
         </div>
       </div>
-
-      <div class="section">
-        <div class="section-title">Weapon Loadout</div>
-        <div class="weapons-list">
-          <div
-            v-for="(w, i) in mech.weapons"
-            :key="i"
-            class="weapon-row"
-            :class="{ rear: w.rear }"
-          >
-            <span class="weapon-name">{{ w.name }}</span>
-            <span class="weapon-range">{{ w.range }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">Technical Data</div>
-        <div class="tech-grid">
-          <div v-for="(t, i) in mech.tech" :key="i" class="tech-item">
-            <span class="tech-key">{{ t.key }}</span>
-            <span class="tech-val">{{ t.val }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="flavor" v-html="mech.flavor"></div>
 
       <div class="footer">
         <span>BATTLETECH: ALPHA STRIKE</span>
-        <span>PV {{ mech.pv }} · SZ {{ size }} · {{ mech.type }}</span>
+        <span>PV {{ unit.pv }} · SZ {{ unit.sz }} · {{ unit.unit_type }}</span>
       </div>
     </div>
 
+    <div v-else-if="loading" class="not-found">
+      <p>Loading…</p>
+    </div>
+
     <div v-else class="not-found">
-      <div class="back-btn" @click="$router.push('/')">← ROSTER</div>
-      <p>Mech not found</p>
+      <div class="back-btn" @click="$router.push('/')">← CATALOG</div>
+      <p>Unit not found</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRosterStore } from '../stores/roster.js'
+import { computed, onMounted, watch } from 'vue'
+import { useCatalogStore } from '../stores/catalog.js'
 
 const props = defineProps({ id: String })
-const store = useRosterStore()
-const mech = computed(() => store.getMech(props.id))
+const store = useCatalogStore()
 
-const size = computed(() => {
-  const w = parseInt(mech.value?.weight)
-  if (w >= 80) return 4
-  if (w >= 60) return 3
-  if (w >= 40) return 2
-  return 1
+const unit = computed(() => store.unit)
+const loading = computed(() => store.loading)
+
+const parsedSpecials = computed(() => {
+  if (!unit.value?.specials) return []
+  return unit.value.specials.split(',').map(s => s.trim()).filter(Boolean)
 })
 
 function barPct(val, max) {
   return Math.min(100, Math.round((val / max) * 100))
 }
+
+onMounted(() => {
+  store.loadUnit(props.id)
+})
+
+watch(() => props.id, (newId) => {
+  store.loadUnit(newId)
+})
 </script>
 
 <style scoped>
@@ -215,16 +194,16 @@ function barPct(val, max) {
 }
 
 .mech-name {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   color: var(--accent-green);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   line-height: 1.1;
   text-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
 }
 
 .mech-variant {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--accent-green-dim);
   margin-top: 2px;
 }
@@ -300,7 +279,7 @@ function barPct(val, max) {
   text-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
 }
 
-.pv-value.tmm {
+.pv-value.sz {
   font-size: 22px;
   color: var(--accent-green-dim);
 }
@@ -350,12 +329,6 @@ function barPct(val, max) {
 
 .stat-value.role {
   font-size: 14px;
-}
-
-.stat-sub {
-  font-size: 10px;
-  color: var(--text-dim);
-  margin-top: 2px;
 }
 
 .damage-grid {
@@ -467,88 +440,6 @@ function barPct(val, max) {
   padding: 4px 10px;
   font-size: 13px;
   font-family: var(--font-mono);
-}
-
-.special-tag.ability {
-  border-color: var(--accent-orange);
-  color: var(--accent-orange-dim);
-  background: #1a1500;
-}
-
-.special-tag.defensive {
-  border-color: var(--accent-blue);
-  color: var(--accent-blue-dim);
-  background: #0a0f1a;
-}
-
-.weapons-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.weapon-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 8px;
-  font-size: 13px;
-}
-
-.weapon-row:nth-child(odd) {
-  background: var(--bg-secondary);
-}
-
-.weapon-name {
-  color: var(--text-primary);
-}
-
-.weapon-range {
-  color: var(--text-dim);
-  font-size: 11px;
-}
-
-.weapon-row.rear .weapon-name {
-  color: var(--text-dim);
-  font-style: italic;
-}
-
-.weapon-row.rear .weapon-name::after {
-  content: ' [R]';
-  color: #ff4444;
-  font-size: 10px;
-}
-
-.tech-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
-  font-size: 12px;
-}
-
-.tech-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 3px 0;
-  border-bottom: 1px dotted var(--border-color);
-}
-
-.tech-key {
-  color: var(--text-dim);
-}
-
-.tech-val {
-  color: var(--text-primary);
-}
-
-.flavor {
-  padding: 8px 16px;
-  font-style: italic;
-  font-size: 11px;
-  color: #4a6a4a;
-  border-left: 2px solid var(--accent-green);
-  margin: 0 16px 8px;
-  line-height: 1.5;
 }
 
 .footer {
