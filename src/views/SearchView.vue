@@ -160,6 +160,7 @@ onMounted(() => {
       >
         <div class="unit-icon">
           <UnitIcon :type="u.unit_type" />
+          <span v-if="store.isInHangar(u.unit_id)" class="hangar-mark">★</span>
           <span class="unit-weight-badge" :class="weightClassFromSz(u.sz)">{{ szLabel(u.sz) }}</span>
         </div>
         <div class="unit-info">
@@ -381,6 +382,17 @@ onMounted(() => {
 .unit-weight-badge.light {
   background: var(--accent-blue);
   color: #fff;
+}
+
+.hangar-mark {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 10px;
+  color: var(--accent-orange);
+  text-shadow: 0 0 4px rgba(255, 136, 0, 0.6);
+  z-index: 2;
+  line-height: 1;
 }
 
 .unit-info {

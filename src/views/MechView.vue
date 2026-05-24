@@ -29,6 +29,12 @@ const tmm = computed(() => {
   return 5;
 });
 
+const inHangar = computed(() => store.isInHangar(props.id));
+
+function toggleHangar() {
+  store.toggleHangar(props.id);
+}
+
 function barPct(val, max) {
   return Math.min(100, Math.round((val / max) * 100));
 }
@@ -55,6 +61,13 @@ watch(
             <div class="mech-name">{{ unit.title }}</div>
             <div class="mech-variant">
               {{ unit.unit_type }} · РЗ {{ unit.sz }}
+            </div>
+            <div
+              class="hangar-toggle"
+              :class="{ active: inHangar }"
+              @click="toggleHangar"
+            >
+              {{ inHangar ? "★ В ангаре" : "☆ В ангар" }}
             </div>
           </div>
           <div class="type-badge">{{ unit.unit_type }}</div>
@@ -219,6 +232,36 @@ watch(
 
 .back-btn:hover {
   color: var(--accent-green);
+}
+
+.hangar-toggle {
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--border-color);
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.hangar-toggle.active {
+  border-color: var(--accent-orange);
+  color: var(--accent-orange);
+  background: rgba(255, 136, 0, 0.05);
+}
+
+.hangar-toggle:hover {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.hangar-toggle.active:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  background: rgba(204, 51, 51, 0.05);
 }
 
 .header {

@@ -68,6 +68,39 @@ export const useCatalogStore = defineStore('catalog', () => {
   const loading = ref(false)
   const error = ref(null)
 
+  // ---------- ангар ----------
+  const hangar = ref([])
+
+  function loadHangar() {
+    try {
+      const raw = localStorage.getItem('ccaf_hangar')
+      hangar.value = raw ? JSON.parse(raw) : []
+    } catch {
+      hangar.value = []
+    }
+  }
+
+  function saveHangar() {
+    localStorage.setItem('ccaf_hangar', JSON.stringify(hangar.value))
+  }
+
+  function toggleHangar(unitId) {
+    const id = Number(unitId)
+    const idx = hangar.value.indexOf(id)
+    if (idx === -1) {
+      hangar.value.push(id)
+    } else {
+      hangar.value.splice(idx, 1)
+    }
+    saveHangar()
+  }
+
+  function isInHangar(unitId) {
+    return hangar.value.includes(Number(unitId))
+  }
+
+  loadHangar()
+
   // ---------- private helpers ----------
   async function apiGet(path) {
     const url = `${getApiBase()}${path}`
@@ -267,6 +300,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     sortOrder,
     loading,
     error,
+    hangar,
     loadEras,
     loadFactions,
     loadRoles,
@@ -274,6 +308,8 @@ export const useCatalogStore = defineStore('catalog', () => {
     loadUnits,
     loadUnit,
     resetFilters,
-    setPage
+    setPage,
+    toggleHangar,
+    isInHangar
   }
 })
