@@ -1,131 +1,168 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue'
-import { useCatalogStore } from '../stores/catalog.js'
+import { computed, onMounted, watch } from "vue";
+import { useCatalogStore } from "../stores/catalog.js";
 
-const props = defineProps({ id: String })
-const store = useCatalogStore()
+const props = defineProps({ id: String });
+const store = useCatalogStore();
 
-const unit = computed(() => store.unit)
-const loading = computed(() => store.loading)
+const unit = computed(() => store.unit);
+const loading = computed(() => store.loading);
 
 const parsedSpecials = computed(() => {
-  if (!unit.value?.specials) return []
-  return unit.value.specials.split(',').map(s => s.trim()).filter(Boolean)
-})
+  if (!unit.value?.specials) return [];
+  return unit.value.specials
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+});
+
+const tmm = computed(() => {
+  if (!unit.value?.mv) return 0;
+  const match = String(unit.value.mv).match(/\d+/);
+  if (!match) return 0;
+  const move = parseInt(match[0], 10);
+  if (move <= 4) return 0;
+  if (move <= 8) return 1;
+  if (move <= 12) return 2;
+  if (move <= 18) return 3;
+  if (move <= 34) return 4;
+  return 5;
+});
 
 function barPct(val, max) {
-  return Math.min(100, Math.round((val / max) * 100))
+  return Math.min(100, Math.round((val / max) * 100));
 }
 
 onMounted(() => {
-  store.loadUnit(props.id)
-})
+  store.loadUnit(props.id);
+});
 
-watch(() => props.id, (newId) => {
-  store.loadUnit(newId)
-})
+watch(
+  () => props.id,
+  (newId) => {
+    store.loadUnit(newId);
+  },
+);
 </script>
 
 <template>
   <div class="page">
     <div v-if="unit" class="card">
       <div class="header">
-        <div class="back-btn" @click="$router.push('/')">← CATALOG</div>
+        <div class="back-btn" @click="$router.push('/')">← КАТАЛОГ</div>
         <div class="header-top">
           <div>
             <div class="mech-name">{{ unit.title }}</div>
-            <div class="mech-variant">{{ unit.unit_type }} · SZ {{ unit.sz }}</div>
+            <div class="mech-variant">
+              {{ unit.unit_type }} · РЗ {{ unit.sz }}
+            </div>
           </div>
           <div class="type-badge">{{ unit.unit_type }}</div>
         </div>
         <div class="mech-meta">
-          <span>Role: {{ unit.role || '—' }}</span>
-          <span>PV {{ unit.pv }}</span>
-          <span>MV {{ unit.mv }}</span>
-        </div>
-      </div>
-
-      <div class="skull-icon">☠ ☠ ☠</div>
-
-      <div class="section">
-        <div class="section-title">Point Value</div>
-        <div class="pv-row">
-          <div class="pv-box">
-            <div class="pv-label">PV</div>
-            <div class="pv-value">{{ unit.pv }}</div>
-          </div>
-          <div class="tmm-box">
-            <div class="pv-label">SZ</div>
-            <div class="pv-value sz">{{ unit.sz }}</div>
-          </div>
+          <span>Роль: {{ unit.role || "—" }}</span>
+          <span>БО {{ unit.pv }}</span>
+          <span>ДВ {{ unit.mv }}</span>
         </div>
       </div>
 
       <div class="section">
-        <div class="section-title">Movement</div>
+        <div class="section-title">Инфо</div>
         <div class="stats-grid">
           <div class="stat-box">
-            <div class="stat-label">Move</div>
+            <div class="stat-label">БО</div>
+            <div class="stat-value small">{{ unit.pv }}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">РЗ</div>
+            <div class="stat-value small">{{ unit.sz }}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">TMM</div>
+            <div class="stat-value small">+{{ tmm }}</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Движение</div>
             <div class="stat-value small">{{ unit.mv }}</div>
           </div>
           <div class="stat-box">
-            <div class="stat-label">Role</div>
+            <div class="stat-label">Роль</div>
             <div class="stat-value small role">{{ unit.role }}</div>
           </div>
           <div class="stat-box">
-            <div class="stat-label">Type</div>
+            <div class="stat-label">Тип</div>
             <div class="stat-value small">{{ unit.unit_type }}</div>
           </div>
         </div>
       </div>
 
       <div class="section">
-        <div class="section-title">Damage</div>
+        <div class="section-title">Урон</div>
         <div class="damage-grid">
           <div class="damage-cell" :class="{ active: unit.short > 0 }">
-            <div class="damage-range">S</div>
-            <div class="damage-value" :class="{ zero: unit.short === 0 }">{{ unit.short }}</div>
+            <div class="damage-range">Б</div>
+            <div class="damage-value" :class="{ zero: unit.short === 0 }">
+              {{ unit.short }}
+            </div>
           </div>
           <div class="damage-cell" :class="{ active: unit.medium > 0 }">
-            <div class="damage-range">M</div>
-            <div class="damage-value" :class="{ zero: unit.medium === 0 }">{{ unit.medium }}</div>
+            <div class="damage-range">С</div>
+            <div class="damage-value" :class="{ zero: unit.medium === 0 }">
+              {{ unit.medium }}
+            </div>
           </div>
           <div class="damage-cell" :class="{ active: unit.long > 0 }">
-            <div class="damage-range">L</div>
-            <div class="damage-value" :class="{ zero: unit.long === 0 }">{{ unit.long }}</div>
+            <div class="damage-range">Д</div>
+            <div class="damage-value" :class="{ zero: unit.long === 0 }">
+              {{ unit.long }}
+            </div>
           </div>
           <div class="damage-cell" :class="{ active: unit.extreme > 0 }">
-            <div class="damage-range">E</div>
-            <div class="damage-value" :class="{ zero: unit.extreme === 0 }">{{ unit.extreme }}</div>
+            <div class="damage-range">Э</div>
+            <div class="damage-value" :class="{ zero: unit.extreme === 0 }">
+              {{ unit.extreme }}
+            </div>
           </div>
         </div>
         <div class="ov-row">
-          <span>OV:</span>
+          <span>Перегрев:</span>
           <span class="ov-value">{{ unit.ov }}</span>
         </div>
       </div>
 
       <div class="section">
-        <div class="section-title">Armor &amp; Structure</div>
+        <div class="section-title">Броня и структура</div>
         <div class="armor-bar-section">
           <div class="bar-container">
-            <div class="bar-label">ARM</div>
+            <div class="bar-label">БР</div>
             <div class="bar-track">
-              <div class="bar-fill" :style="{ width: barPct(unit.armor, 12) + '%' }"></div>
+              <div
+                class="bar-fill"
+                :style="{ width: barPct(unit.armor, 12) + '%' }"
+              ></div>
             </div>
             <div class="bar-num">{{ unit.armor }}</div>
           </div>
           <div class="bar-container">
-            <div class="bar-label">STR</div>
+            <div class="bar-label">СТР</div>
             <div class="bar-track">
-              <div class="bar-fill struct" :style="{ width: barPct(unit.struc, 8) + '%' }"></div>
+              <div
+                class="bar-fill struct"
+                :style="{ width: barPct(unit.struc, 8) + '%' }"
+              ></div>
             </div>
             <div class="bar-num">{{ unit.struc }}</div>
           </div>
           <div class="bar-container">
-            <div class="bar-label">THR</div>
+            <div class="bar-label">ТЯГ</div>
             <div class="bar-track">
-              <div class="bar-fill thr" :style="{ width: barPct(unit.threshold, 6) + '%' }"></div>
+              <div
+                class="bar-fill thr"
+                :style="{ width: barPct(unit.threshold, 6) + '%' }"
+              ></div>
             </div>
             <div class="bar-num">{{ unit.threshold }}</div>
           </div>
@@ -133,29 +170,27 @@ watch(() => props.id, (newId) => {
       </div>
 
       <div class="section">
-        <div class="section-title">Special Abilities</div>
+        <div class="section-title">Особые способности</div>
         <div class="specials-list">
-          <span
-            v-for="(s, i) in parsedSpecials"
-            :key="i"
-            class="special-tag"
-          >{{ s }}</span>
+          <span v-for="(s, i) in parsedSpecials" :key="i" class="special-tag">{{
+            s
+          }}</span>
         </div>
       </div>
 
       <div class="footer">
         <span>BATTLETECH: ALPHA STRIKE</span>
-        <span>PV {{ unit.pv }} · SZ {{ unit.sz }} · {{ unit.unit_type }}</span>
+        <span>БО {{ unit.pv }} · РЗ {{ unit.sz }} · {{ unit.unit_type }}</span>
       </div>
     </div>
 
     <div v-else-if="loading" class="not-found">
-      <p>Loading…</p>
+      <p>Загрузка…</p>
     </div>
 
     <div v-else class="not-found">
-      <div class="back-btn" @click="$router.push('/')">← CATALOG</div>
-      <p>Unit not found</p>
+      <div class="back-btn" @click="$router.push('/')">← КАТАЛОГ</div>
+      <p>Юнит не найден</p>
     </div>
   </div>
 </template>
@@ -164,7 +199,12 @@ watch(() => props.id, (newId) => {
 .card {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-primary) 0%,
+    var(--bg-secondary) 50%,
+    var(--bg-primary) 100%
+  );
   position: relative;
 }
 
@@ -236,60 +276,9 @@ watch(() => props.id, (newId) => {
   border-right: none;
 }
 
-.skull-icon {
-  text-align: center;
-  font-size: 36px;
-  color: var(--border-color);
-  padding: 4px 0;
-  letter-spacing: 8px;
-  user-select: none;
-}
-
 .section {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
-}
-
-.pv-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.pv-box {
-  background: var(--bg-secondary);
-  border: 1px solid var(--accent-green);
-  padding: 8px 16px;
-  text-align: center;
-  flex: 1;
-  margin-right: 8px;
-}
-
-.pv-label {
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
-}
-
-.pv-value {
-  font-size: 28px;
-  color: var(--accent-green);
-  font-weight: bold;
-  text-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
-}
-
-.pv-value.sz {
-  font-size: 22px;
-  color: var(--accent-green-dim);
-}
-
-.tmm-box {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  padding: 8px 16px;
-  text-align: center;
-  flex: 1;
 }
 
 .stats-grid {
@@ -410,7 +399,11 @@ watch(() => props.id, (newId) => {
 
 .bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-green-dim), var(--accent-green));
+  background: linear-gradient(
+    90deg,
+    var(--accent-green-dim),
+    var(--accent-green)
+  );
 }
 
 .bar-fill.struct {
