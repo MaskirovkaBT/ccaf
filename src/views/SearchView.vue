@@ -1,3 +1,88 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useCatalogStore } from '../stores/catalog.js'
+
+const store = useCatalogStore()
+const { eras, factions, types, units, total, page, size, filters, sortBy, sortOrder, loading, error } = storeToRefs(store)
+
+const totalPages = computed(() => Math.ceil(total.value / size.value) || 1)
+const factionOpen = ref(false)
+const selectedFactionCount = computed(() => filters.value.faction_id.length)
+
+let debounceTimer = null
+function debouncedLoad() {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    store.setPage(1)
+    store.loadUnits()
+  }, 300)
+}
+
+function applyFilters() {
+  store.setPage(1)
+  store.loadUnits()
+}
+
+function toggleFaction(id) {
+  const arr = filters.value.faction_id
+  const idx = arr.indexOf(id)
+  if (idx === -1) {
+    arr.push(id)
+  } else {
+    arr.splice(idx, 1)
+  }
+  store.setPage(1)
+  store.loadUnits()
+}
+
+function toggleSortOrder() {
+  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  applyFilters()
+}
+
+function prevPage() {
+  if (page.value > 1) {
+    store.setPage(page.value - 1)
+    store.loadUnits()
+  }
+}
+
+function nextPage() {
+  if (page.value < totalPages.value) {
+    store.setPage(page.value + 1)
+    store.loadUnits()
+  }
+}
+
+function weightClassFromSz(sz) {
+  if (sz >= 4) return 'assault'
+  if (sz === 3) return 'heavy'
+  if (sz === 2) return 'medium'
+  return 'light'
+}
+
+function szLabel(sz) {
+  const map = { 4: 'ТЯЖ', 3: 'СРД', 2: 'ЛГК', 1: 'ЛЕГ' }
+  return map[sz] || '??'
+}
+
+function damagePips(u) {
+  const pips = []
+  for (let i = 0; i < (u.short || 0); i++) pips.push('s')
+  for (let i = 0; i < (u.medium || 0); i++) pips.push('m')
+  for (let i = 0; i < (u.long || 0); i++) pips.push('l')
+  return pips
+}
+
+onMounted(() => {
+  store.loadEras()
+  store.loadFactions()
+  store.loadTypes()
+  store.loadUnits()
+})
+</script>
+
 <template>
   <div class="page">
     <!-- ФИЛЬТРЫ -->
@@ -122,91 +207,6 @@
     <div v-if="!loading && units.length === 0" class="status-msg">Ничего не найдено</div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useCatalogStore } from '../stores/catalog.js'
-
-const store = useCatalogStore()
-const { eras, factions, types, units, total, page, size, filters, sortBy, sortOrder, loading, error } = storeToRefs(store)
-
-const totalPages = computed(() => Math.ceil(total.value / size.value) || 1)
-const factionOpen = ref(false)
-const selectedFactionCount = computed(() => filters.value.faction_id.length)
-
-let debounceTimer = null
-function debouncedLoad() {
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    store.setPage(1)
-    store.loadUnits()
-  }, 300)
-}
-
-function applyFilters() {
-  store.setPage(1)
-  store.loadUnits()
-}
-
-function toggleFaction(id) {
-  const arr = filters.value.faction_id
-  const idx = arr.indexOf(id)
-  if (idx === -1) {
-    arr.push(id)
-  } else {
-    arr.splice(idx, 1)
-  }
-  store.setPage(1)
-  store.loadUnits()
-}
-
-function toggleSortOrder() {
-  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-  applyFilters()
-}
-
-function prevPage() {
-  if (page.value > 1) {
-    store.setPage(page.value - 1)
-    store.loadUnits()
-  }
-}
-
-function nextPage() {
-  if (page.value < totalPages.value) {
-    store.setPage(page.value + 1)
-    store.loadUnits()
-  }
-}
-
-function weightClassFromSz(sz) {
-  if (sz >= 4) return 'assault'
-  if (sz === 3) return 'heavy'
-  if (sz === 2) return 'medium'
-  return 'light'
-}
-
-function szLabel(sz) {
-  const map = { 4: 'ТЯЖ', 3: 'СРД', 2: 'ЛГК', 1: 'ЛЕГ' }
-  return map[sz] || '??'
-}
-
-function damagePips(u) {
-  const pips = []
-  for (let i = 0; i < (u.short || 0); i++) pips.push('s')
-  for (let i = 0; i < (u.medium || 0); i++) pips.push('m')
-  for (let i = 0; i < (u.long || 0); i++) pips.push('l')
-  return pips
-}
-
-onMounted(() => {
-  store.loadEras()
-  store.loadFactions()
-  store.loadTypes()
-  store.loadUnits()
-})
-</script>
 
 <style scoped>
 .filters-panel {

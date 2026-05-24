@@ -1,26 +1,3 @@
-<template>
-  <div class="setup-page">
-    <div class="setup-card">
-      <img src="/icon-192x192.png" alt="Логотип" class="logo" />
-      <h1 class="title">ВС КК</h1>
-      <p class="subtitle">Помощник для новобранца</p>
-
-      <div class="form">
-        <label class="label">Адрес сервера</label>
-        <input
-          v-model="serverUrl"
-          type="text"
-          placeholder="http://localhost:8000"
-          class="input"
-          @keyup.enter="save"
-        />
-        <p v-if="error" class="error-text">{{ error }}</p>
-        <button @click="save" class="btn" :disabled="!canSubmit">Продолжить</button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -49,9 +26,32 @@ function save() {
 
   localStorage.setItem('ccaf_api_url', fixed)
   error.value = ''
-  router.replace({ name: 'roster' })
+  router.replace({ name: 'search' })
 }
 </script>
+
+<template>
+  <div class="setup-page">
+    <div class="setup-card">
+      <img src="/icon-192x192.png" alt="Логотип" class="logo" />
+      <h1 class="title">ВС КК</h1>
+      <p class="subtitle">Помощник для новобранца</p>
+
+      <div class="form">
+        <label class="label">Адрес сервера</label>
+        <input
+          v-model="serverUrl"
+          type="text"
+          placeholder="http://localhost:8000"
+          class="input"
+          @keyup.enter="save"
+        />
+        <p v-if="error" class="error-text">{{ error }}</p>
+        <button @click="save" class="btn" :disabled="!canSubmit">Продолжить</button>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .setup-page {

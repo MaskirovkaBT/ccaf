@@ -1,3 +1,31 @@
+<script setup>
+import { computed, onMounted, watch } from 'vue'
+import { useCatalogStore } from '../stores/catalog.js'
+
+const props = defineProps({ id: String })
+const store = useCatalogStore()
+
+const unit = computed(() => store.unit)
+const loading = computed(() => store.loading)
+
+const parsedSpecials = computed(() => {
+  if (!unit.value?.specials) return []
+  return unit.value.specials.split(',').map(s => s.trim()).filter(Boolean)
+})
+
+function barPct(val, max) {
+  return Math.min(100, Math.round((val / max) * 100))
+}
+
+onMounted(() => {
+  store.loadUnit(props.id)
+})
+
+watch(() => props.id, (newId) => {
+  store.loadUnit(newId)
+})
+</script>
+
 <template>
   <div class="page">
     <div v-if="unit" class="card">
@@ -131,34 +159,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed, onMounted, watch } from 'vue'
-import { useCatalogStore } from '../stores/catalog.js'
-
-const props = defineProps({ id: String })
-const store = useCatalogStore()
-
-const unit = computed(() => store.unit)
-const loading = computed(() => store.loading)
-
-const parsedSpecials = computed(() => {
-  if (!unit.value?.specials) return []
-  return unit.value.specials.split(',').map(s => s.trim()).filter(Boolean)
-})
-
-function barPct(val, max) {
-  return Math.min(100, Math.round((val / max) * 100))
-}
-
-onMounted(() => {
-  store.loadUnit(props.id)
-})
-
-watch(() => props.id, (newId) => {
-  store.loadUnit(newId)
-})
-</script>
 
 <style scoped>
 .card {
