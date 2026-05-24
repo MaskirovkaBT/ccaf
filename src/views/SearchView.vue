@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCatalogStore } from '../stores/catalog.js'
+import UnitIcon from '../components/UnitIcon.vue'
 
 const store = useCatalogStore()
 const { eras, factions, types, units, total, page, size, filters, sortBy, sortOrder, loading, error } = storeToRefs(store)
@@ -158,7 +159,7 @@ onMounted(() => {
         class="unit-row"
       >
         <div class="unit-icon">
-          ⚙
+          <UnitIcon :type="u.unit_type" />
           <span class="unit-weight-badge" :class="weightClassFromSz(u.sz)">{{ szLabel(u.sz) }}</span>
         </div>
         <div class="unit-info">
@@ -346,7 +347,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  color: var(--accent-green);
   flex-shrink: 0;
   position: relative;
 }
