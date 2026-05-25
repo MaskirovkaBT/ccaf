@@ -1,87 +1,130 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useCatalogStore } from '../stores/catalog.js'
-import UnitIcon from '../components/UnitIcon.vue'
+import { ref, computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useCatalogStore } from "../stores/catalog.js";
+import UnitIcon from "../components/UnitIcon.vue";
+import FilterModal from "../components/FilterModal.vue";
 
-const store = useCatalogStore()
-const { eras, factions, types, units, total, page, size, filters, sortBy, sortOrder, loading, error } = storeToRefs(store)
+const store = useCatalogStore();
+const {
+  eras,
+  factions,
+  types,
+  units,
+  total,
+  page,
+  size,
+  filters,
+  sortBy,
+  sortOrder,
+  loading,
+  error,
+} = storeToRefs(store);
 
-const totalPages = computed(() => Math.ceil(total.value / size.value) || 1)
-const factionOpen = ref(false)
-const selectedFactionCount = computed(() => filters.value.faction_id.length)
+const totalPages = computed(() => Math.ceil(total.value / size.value) || 1);
+const factionOpen = ref(false);
+const filterModalOpen = ref(false);
+const selectedFactionCount = computed(() => filters.value.faction_id.length);
 
-let debounceTimer = null
+const activeFilterCount = computed(() => {
+  let c = 0;
+  if (filters.value.era_id != null) c++;
+  if (filters.value.faction_id.length > 0) c++;
+  if (filters.value.unit_type) c++;
+  if (filters.value.title) c++;
+  if (filters.value.role) c++;
+  if (filters.value.specials) c++;
+  const numericKeys = [
+    "pv",
+    "sz",
+    "short",
+    "medium",
+    "long",
+    "extreme",
+    "ov",
+    "armor",
+    "struc",
+    "threshold",
+    "mv",
+  ];
+  numericKeys.forEach((k) => {
+    const v = filters.value[k];
+    if (v !== "" && v != null) c++;
+  });
+  return c;
+});
+
+let debounceTimer = null;
 function debouncedLoad() {
-  clearTimeout(debounceTimer)
+  clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
-    store.setPage(1)
-    store.loadUnits()
-  }, 300)
+    store.setPage(1);
+    store.loadUnits();
+  }, 300);
 }
 
 function applyFilters() {
-  store.setPage(1)
-  store.loadUnits()
+  store.setPage(1);
+  store.loadUnits();
 }
 
 function toggleFaction(id) {
-  const arr = filters.value.faction_id
-  const idx = arr.indexOf(id)
+  const arr = filters.value.faction_id;
+  const idx = arr.indexOf(id);
   if (idx === -1) {
-    arr.push(id)
+    arr.push(id);
   } else {
-    arr.splice(idx, 1)
+    arr.splice(idx, 1);
   }
-  store.setPage(1)
-  store.loadUnits()
+  store.setPage(1);
+  store.loadUnits();
 }
 
 function toggleSortOrder() {
-  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-  applyFilters()
+  sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
+  applyFilters();
 }
 
 function prevPage() {
   if (page.value > 1) {
-    store.setPage(page.value - 1)
-    store.loadUnits()
+    store.setPage(page.value - 1);
+    store.loadUnits();
   }
 }
 
 function nextPage() {
   if (page.value < totalPages.value) {
-    store.setPage(page.value + 1)
-    store.loadUnits()
+    store.setPage(page.value + 1);
+    store.loadUnits();
   }
 }
 
 function weightClassFromSz(sz) {
-  if (sz >= 4) return 'assault'
-  if (sz === 3) return 'heavy'
-  if (sz === 2) return 'medium'
-  return 'light'
+  if (sz >= 4) return "assault";
+  if (sz === 3) return "heavy";
+  if (sz === 2) return "medium";
+  return "light";
 }
 
 function szLabel(sz) {
-  const map = { 4: 'ТЯЖ', 3: 'СРД', 2: 'ЛГК', 1: 'ЛЕГ' }
-  return map[sz] || '??'
+  const map = { 4: "ТЯЖ", 3: "СРД", 2: "ЛГК", 1: "ЛЕГ" };
+  return map[sz] || "??";
 }
 
 function damagePips(u) {
-  const pips = []
-  for (let i = 0; i < (u.short || 0); i++) pips.push('s')
-  for (let i = 0; i < (u.medium || 0); i++) pips.push('m')
-  for (let i = 0; i < (u.long || 0); i++) pips.push('l')
-  return pips
+  const pips = [];
+  for (let i = 0; i < (u.short || 0); i++) pips.push("s");
+  for (let i = 0; i < (u.medium || 0); i++) pips.push("m");
+  for (let i = 0; i < (u.long || 0); i++) pips.push("l");
+  return pips;
 }
 
 onMounted(() => {
-  store.loadEras()
-  store.loadFactions()
-  store.loadTypes()
-  store.loadUnits()
-})
+  store.loadEras();
+  store.loadFactions();
+  store.loadTypes();
+  store.loadUnits();
+});
 </script>
 
 <template>
@@ -89,25 +132,43 @@ onMounted(() => {
     <!-- ФИЛЬТРЫ -->
     <div class="filters-panel">
       <div class="filters-row">
-        <select v-model="filters.era_id" @change="applyFilters" class="filter-select">
+        <select
+          v-model="filters.era_id"
+          @change="applyFilters"
+          class="filter-select"
+        >
           <option :value="null">Все эры</option>
-          <option v-for="e in eras" :key="e.era_id" :value="e.era_id">{{ e.title }}</option>
+          <option v-for="e in eras" :key="e.era_id" :value="e.era_id">
+            {{ e.title }}
+          </option>
         </select>
-        <select v-model="filters.unit_type" @change="applyFilters" class="filter-select">
+        <select
+          v-model="filters.unit_type"
+          @change="applyFilters"
+          class="filter-select"
+        >
           <option value="">Все типы</option>
           <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
         </select>
       </div>
 
-      <!-- Мультивыбор фракций -->
       <div class="filters-row">
         <div class="multi-select" :class="{ open: factionOpen }">
           <div class="multi-select-label" @click="factionOpen = !factionOpen">
-            <span>Фракции {{ selectedFactionCount > 0 ? `(${selectedFactionCount})` : '' }}</span>
-            <span class="chevron">{{ factionOpen ? '▲' : '▼' }}</span>
+            <span
+              >Фракции
+              {{
+                selectedFactionCount > 0 ? `(${selectedFactionCount})` : ""
+              }}</span
+            >
+            <span class="chevron">{{ factionOpen ? "▲" : "▼" }}</span>
           </div>
           <div class="multi-select-options" @click.stop>
-            <label v-for="f in factions" :key="f.faction_id" class="multi-option">
+            <label
+              v-for="f in factions"
+              :key="f.faction_id"
+              class="multi-option"
+            >
               <input
                 type="checkbox"
                 :checked="filters.faction_id.includes(f.faction_id)"
@@ -125,30 +186,49 @@ onMounted(() => {
         placeholder="Поиск по названию..."
         class="filter-input"
       />
-      <input
-        v-model="filters.role"
-        @input="debouncedLoad"
-        placeholder="Роль..."
-        class="filter-input"
-      />
     </div>
 
-    <!-- СОРТИРОВКА -->
-    <div class="sort-bar">
-      <span class="sort-label">СОРТИРОВКА</span>
-      <select v-model="sortBy" @change="applyFilters" class="sort-select">
-        <option value="title">Название</option>
-        <option value="pv">Очки</option>
-        <option value="role">Роль</option>
-        <option value="short">Урон Б</option>
-        <option value="medium">Урон С</option>
-        <option value="long">Урон Д</option>
-        <option value="armor">Броня</option>
-        <option value="struc">Структура</option>
-        <option value="mv">Скорость</option>
-      </select>
-      <button @click="toggleSortOrder" class="sort-btn">{{ sortOrder === 'asc' ? '▲' : '▼' }}</button>
+    <!-- ПАНЕЛЬ ИНСТРУМЕНТОВ -->
+    <div class="toolbar">
+      <button class="toolbar-filters" @click="filterModalOpen = true">
+        <svg
+          class="filters-icon"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+        </svg>
+        <span class="filters-label">ФИЛЬТРЫ</span>
+        <span v-if="activeFilterCount > 0" class="filters-badge">{{
+          activeFilterCount
+        }}</span>
+      </button>
+
+      <div class="toolbar-sort">
+        <select v-model="sortBy" @change="applyFilters" class="sort-select">
+          <option value="title">Название</option>
+          <option value="pv">Очки</option>
+          <option value="role">Роль</option>
+          <option value="short">Урон ближний</option>
+          <option value="medium">Урон средний</option>
+          <option value="long">Урон дальний</option>
+          <option value="armor">Броня</option>
+          <option value="struc">Структура</option>
+          <option value="mv">Скорость</option>
+        </select>
+        <button @click="toggleSortOrder" class="sort-dir-btn">
+          {{ sortOrder === "asc" ? "▲" : "▼" }}
+        </button>
+      </div>
     </div>
+
+    <FilterModal v-if="filterModalOpen" @close="filterModalOpen = false" />
 
     <!-- СПИСОК ЮНИТОВ -->
     <div class="units-list">
@@ -161,13 +241,22 @@ onMounted(() => {
         <div class="unit-icon">
           <UnitIcon :type="u.unit_type" />
           <span v-if="store.isInHangar(u.unit_id)" class="hangar-mark">★</span>
-          <span class="unit-weight-badge" :class="weightClassFromSz(u.sz)">{{ szLabel(u.sz) }}</span>
+          <span class="unit-weight-badge" :class="weightClassFromSz(u.sz)">{{
+            szLabel(u.sz)
+          }}</span>
         </div>
         <div class="unit-info">
           <div class="unit-name">{{ u.title }}</div>
-          <div class="unit-variant">{{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }}</div>
+          <div class="unit-variant">
+            {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }}
+          </div>
           <div class="unit-damage-bar">
-            <div v-for="(pip, idx) in damagePips(u)" :key="idx" class="dmg-pip" :class="pip"></div>
+            <div
+              v-for="(pip, idx) in damagePips(u)"
+              :key="idx"
+              class="dmg-pip"
+              :class="pip"
+            ></div>
           </div>
         </div>
         <div class="unit-stats">
@@ -206,7 +295,9 @@ onMounted(() => {
     <!-- СТАТУС -->
     <div v-if="loading" class="status-msg">Загрузка…</div>
     <div v-if="error" class="status-msg error">{{ error }}</div>
-    <div v-if="!loading && units.length === 0" class="status-msg">Ничего не найдено</div>
+    <div v-if="!loading && units.length === 0" class="status-msg">
+      Ничего не найдено
+    </div>
   </div>
 </template>
 
@@ -225,8 +316,7 @@ onMounted(() => {
 }
 
 .filter-select,
-.filter-input,
-.sort-select {
+.filter-input {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -299,27 +389,78 @@ onMounted(() => {
   accent-color: var(--accent-green);
 }
 
-.sort-bar {
+/* Toolbar */
+.toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  font-family: var(--font-mono);
   font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
 }
 
-.sort-label {
-  color: var(--text-dim);
-  letter-spacing: 1px;
+.toolbar-filters:hover {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
 }
 
-.sort-btn {
+.filters-icon {
+  font-size: 12px;
+}
+
+.filters-label {
+  font-weight: 700;
+}
+
+.filters-badge {
+  background: var(--accent-orange);
+  color: #000;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-family: var(--font-display);
+}
+
+.toolbar-sort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sort-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 5px 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  outline: none;
+}
+
+.sort-dir-btn {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   color: var(--accent-green);
-  padding: 2px 8px;
-  cursor: pointer;
+  padding: 5px 8px;
   font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
 }
 
 .units-list {

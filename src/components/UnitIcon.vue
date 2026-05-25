@@ -1,9 +1,9 @@
 <script setup>
 const props = defineProps({
-  type: { type: String, default: 'UNKNOWN' }
-})
+  type: { type: String, default: "UNKNOWN" },
+});
 
-const t = (props.type || 'UNKNOWN').toUpperCase()
+const t = (props.type || "UNKNOWN").toUpperCase();
 </script>
 
 <template>
@@ -95,12 +95,27 @@ const t = (props.type || 'UNKNOWN').toUpperCase()
     <g v-else-if="t === 'BUILDING'" fill="currentColor">
       <polygon points="12,2 22,9 2,9" />
       <rect x="4" y="9" width="16" height="13" />
-      <rect x="10" y="16" width="4" height="6" fill="none" stroke="currentColor" stroke-width="1" />
+      <rect
+        x="10"
+        y="16"
+        width="4"
+        height="6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1"
+      />
     </g>
 
     <!-- UNKNOWN / fallback -->
     <g v-else fill="currentColor">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      />
       <circle cx="12" cy="9" r="1.5" />
       <rect x="10.5" y="12" width="3" height="5" />
     </g>

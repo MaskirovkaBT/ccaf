@@ -1,32 +1,32 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
-const serverUrl = ref('')
-const error = ref('')
+const router = useRouter();
+const serverUrl = ref("");
+const error = ref("");
 
-const canSubmit = computed(() => serverUrl.value.trim().length > 0)
+const canSubmit = computed(() => serverUrl.value.trim().length > 0);
 
 function save() {
-  const url = serverUrl.value.trim()
+  const url = serverUrl.value.trim();
   if (!url) {
-    error.value = 'Введите адрес сервера'
-    return
+    error.value = "Введите адрес сервера";
+    return;
   }
 
   // добавляем протокол, если забыли
-  let fixed = url
+  let fixed = url;
   if (!/^https?:\/\//i.test(fixed)) {
-    fixed = 'http://' + fixed
+    fixed = "http://" + fixed;
   }
 
   // убираем trailing slash
-  fixed = fixed.replace(/\/$/, '')
+  fixed = fixed.replace(/\/$/, "");
 
-  localStorage.setItem('ccaf_api_url', fixed)
-  error.value = ''
-  router.replace({ name: 'search' })
+  localStorage.setItem("ccaf_api_url", fixed);
+  error.value = "";
+  router.replace({ name: "search" });
 }
 </script>
 
@@ -47,7 +47,9 @@ function save() {
           @keyup.enter="save"
         />
         <p v-if="error" class="error-text">{{ error }}</p>
-        <button @click="save" class="btn" :disabled="!canSubmit">Продолжить</button>
+        <button @click="save" class="btn" :disabled="!canSubmit">
+          Продолжить
+        </button>
       </div>
     </div>
   </div>
@@ -60,7 +62,11 @@ function save() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-primary) 0%,
+    var(--bg-secondary) 100%
+  );
   padding: 20px;
 }
 
@@ -144,7 +150,9 @@ function save() {
   letter-spacing: 2px;
   text-transform: uppercase;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.1s ease;
 }
 
 .btn:hover:not(:disabled) {

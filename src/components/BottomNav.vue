@@ -1,7 +1,24 @@
 <template>
   <nav class="bottom-nav">
-    <router-link to="/" class="nav-item" :class="{ active: $route.name === 'search' }">
-      <span class="nav-icon">☰</span>
+    <router-link
+      to="/"
+      class="nav-item"
+      :class="{ active: $route.name === 'search' }"
+    >
+      <svg
+        class="nav-icon"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
       <span>Поиск</span>
     </router-link>
     <div class="nav-item">
