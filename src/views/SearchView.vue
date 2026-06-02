@@ -122,6 +122,7 @@ function damagePips(u) {
 onMounted(() => {
   store.loadEras();
   store.loadFactions();
+  store.loadRoles();
   store.loadTypes();
   store.loadUnits();
 });

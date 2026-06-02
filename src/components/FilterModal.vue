@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useCatalogStore } from "../stores/catalog.js";
 
@@ -7,6 +7,7 @@ const store = useCatalogStore();
 const {
   eras,
   factions,
+  roles,
   types,
   filters,
   filterModes,
@@ -14,15 +15,43 @@ const {
   sortOrder,
 } = storeToRefs(store);
 
-const emit = defineEmits(["close"]);
+const props = defineProps({
+  mode: { type: String, default: 'store' },
+  initialFilters: { type: Object, default: null },
+  initialFilterModes: { type: Object, default: null },
+  initialSortBy: { type: String, default: null },
+  initialSortOrder: { type: String, default: null },
+})
+
+const emit = defineEmits(["close", "apply", "reset"]);
 
 const factionOpen = ref(false);
 
 // Локальные копии — изменения в модале не трогают store до нажатия "Применить"
-const localFilters = ref(JSON.parse(JSON.stringify(filters.value)));
-const localFilterModes = ref(JSON.parse(JSON.stringify(filterModes.value)));
-const localSortBy = ref(sortBy.value);
-const localSortOrder = ref(sortOrder.value);
+const localFilters = ref({})
+const localFilterModes = ref({})
+const localSortBy = ref('title')
+const localSortOrder = ref('asc')
+
+function initLocals() {
+  if (props.mode === 'local' && props.initialFilters) {
+    localFilters.value = JSON.parse(JSON.stringify(props.initialFilters))
+    localFilterModes.value = JSON.parse(JSON.stringify(props.initialFilterModes || {}))
+    localSortBy.value = props.initialSortBy || 'title'
+    localSortOrder.value = props.initialSortOrder || 'asc'
+  } else {
+    localFilters.value = JSON.parse(JSON.stringify(filters.value))
+    localFilterModes.value = JSON.parse(JSON.stringify(filterModes.value))
+    localSortBy.value = sortBy.value
+    localSortOrder.value = sortOrder.value
+  }
+}
+initLocals()
+watch(
+  () => [props.initialFilters, props.initialFilterModes, props.initialSortBy, props.initialSortOrder],
+  initLocals,
+  { deep: true }
+)
 
 onMounted(() => {
   document.addEventListener("keydown", onKeydown);
@@ -56,19 +85,32 @@ function close() {
 }
 
 function apply() {
-  filters.value = JSON.parse(JSON.stringify(localFilters.value));
-  filterModes.value = JSON.parse(JSON.stringify(localFilterModes.value));
-  sortBy.value = localSortBy.value;
-  sortOrder.value = localSortOrder.value;
-  store.setPage(1);
-  store.loadUnits();
-  close();
+  if (props.mode === 'local') {
+    emit('apply', {
+      filters: JSON.parse(JSON.stringify(localFilters.value)),
+      filterModes: JSON.parse(JSON.stringify(localFilterModes.value)),
+      sortBy: localSortBy.value,
+      sortOrder: localSortOrder.value,
+    })
+  } else {
+    filters.value = JSON.parse(JSON.stringify(localFilters.value));
+    filterModes.value = JSON.parse(JSON.stringify(localFilterModes.value));
+    sortBy.value = localSortBy.value;
+    sortOrder.value = localSortOrder.value;
+    store.setPage(1);
+    store.loadUnits();
+    close();
+  }
 }
 
 function reset() {
-  store.resetFilters();
-  store.loadUnits();
-  close();
+  if (props.mode === 'local') {
+    emit('reset')
+  } else {
+    store.resetFilters();
+    store.loadUnits();
+    close();
+  }
 }
 
 function toggleFaction(id) {
@@ -209,11 +251,10 @@ function toggleSortOrder() {
         </div>
         <div class="field-row">
           <label>Роль</label>
-          <input
-            v-model="localFilters.role"
-            placeholder="Роль..."
-            class="field-input"
-          />
+          <select v-model="localFilters.role" class="field-select">
+            <option value="">Все роли</option>
+            <option v-for="r in roles" :key="r" :value="r">{{ r }}</option>
+          </select>
         </div>
 
         <!-- Числовые фильтры -->

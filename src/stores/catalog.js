@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-function getApiBase() {
+export function getApiBase() {
   if (import.meta.env.DEV) {
     return '/api'
   }
@@ -70,6 +70,7 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   // ---------- ангар ----------
   const hangar = ref([])
+  const hangarUnits = ref([])
 
   function loadHangar() {
     try {
@@ -99,7 +100,92 @@ export const useCatalogStore = defineStore('catalog', () => {
     return hangar.value.includes(Number(unitId))
   }
 
+  async function loadHangarUnits() {
+    const ids = hangar.value
+    if (ids.length === 0) {
+      hangarUnits.value = []
+      return
+    }
+    const results = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          return await apiGet(`/units/${id}`)
+        } catch (err) {
+          console.error('Failed to load hangar unit', id, err)
+          return null
+        }
+      })
+    )
+    hangarUnits.value = results.filter(Boolean)
+  }
+
+  const formationUnitCache = ref(new Map())
+
+  async function resolveUnits(unitIds) {
+    const ids = (unitIds || []).map(Number)
+    const missing = ids.filter((id) => !formationUnitCache.value.has(id))
+    if (missing.length) {
+      const results = await Promise.all(
+        missing.map(async (id) => {
+          try {
+            return await apiGet(`/units/${id}`)
+          } catch (err) {
+            console.error('Failed to load unit', id, err)
+            return null
+          }
+        })
+      )
+      results.forEach((u) => {
+        if (u) formationUnitCache.value.set(u.unit_id, u)
+      })
+    }
+    return ids.map((id) => formationUnitCache.value.get(id)).filter(Boolean)
+  }
+
   loadHangar()
+
+  // ---------- формации ----------
+  const formations = ref([])
+
+  function loadFormations() {
+    try {
+      const raw = localStorage.getItem('ccaf_formations')
+      formations.value = raw ? JSON.parse(raw) : []
+    } catch {
+      formations.value = []
+    }
+  }
+
+  function saveFormations() {
+    localStorage.setItem('ccaf_formations', JSON.stringify(formations.value))
+  }
+
+  function addFormation(formation) {
+    formations.value.push({
+      id: Date.now(),
+      ...formation,
+      createdAt: new Date().toISOString()
+    })
+    saveFormations()
+  }
+
+  function updateFormation(id, data) {
+    const idx = formations.value.findIndex((f) => f.id === id)
+    if (idx !== -1) {
+      formations.value[idx] = { ...formations.value[idx], ...data }
+      saveFormations()
+    }
+  }
+
+  function removeFormation(id) {
+    const idx = formations.value.findIndex((f) => f.id === id)
+    if (idx !== -1) {
+      formations.value.splice(idx, 1)
+      saveFormations()
+    }
+  }
+
+  loadFormations()
 
   // ---------- private helpers ----------
   async function apiGet(path) {
@@ -301,15 +387,23 @@ export const useCatalogStore = defineStore('catalog', () => {
     loading,
     error,
     hangar,
+    hangarUnits,
+    formations,
+    formationUnitCache,
     loadEras,
     loadFactions,
     loadRoles,
     loadTypes,
     loadUnits,
     loadUnit,
+    loadHangarUnits,
+    resolveUnits,
     resetFilters,
     setPage,
     toggleHangar,
-    isInHangar
+    isInHangar,
+    addFormation,
+    updateFormation,
+    removeFormation
   }
 })
