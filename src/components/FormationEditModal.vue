@@ -30,6 +30,10 @@ const activeTab = ref('hangar') // 'hangar' | 'search'
 const searchQuery = ref('')
 const searchResults = ref([])
 const searchLoading = ref(false)
+const searchPage = ref(1)
+const searchSize = ref(20)
+const searchTotal = ref(0)
+const searchPages = ref(1)
 let searchDebounce = null
 
 // Extended search filters (local to modal)
@@ -111,6 +115,9 @@ function init() {
   }
   searchQuery.value = ''
   searchResults.value = []
+  searchPage.value = 1
+  searchTotal.value = 0
+  searchPages.value = 1
   resolveCurrentUnits()
 }
 
@@ -204,7 +211,10 @@ function unitCountInFormation(unitId) {
 
 function onSearchInput() {
   clearTimeout(searchDebounce)
-  searchDebounce = setTimeout(() => doSearch(), 400)
+  searchDebounce = setTimeout(() => {
+    searchPage.value = 1
+    doSearch()
+  }, 400)
 }
 
 function buildSearchQuery() {
@@ -242,9 +252,21 @@ function buildSearchQuery() {
 
   params.append('sort_by', searchSortBy.value)
   params.append('sort_order', searchSortOrder.value)
-  params.append('size', 20)
+  params.append('page', searchPage.value)
+  params.append('size', searchSize.value)
 
   return { query: params.toString(), headers }
+}
+
+function parseSearchPageResponse(payload) {
+  const items = Array.isArray(payload)
+    ? payload
+    : (payload.items || payload.results || payload.data || payload.content || [])
+  const totalCount = payload.total ?? payload.count ?? payload.total_count ?? items.length
+  const currentPage = payload.page ?? payload.page_number ?? 1
+  const currentSize = payload.size ?? payload.page_size ?? payload.limit ?? searchSize.value
+  const pages = payload.pages ?? (Math.ceil(totalCount / currentSize) || 1)
+  return { items, total: totalCount, page: currentPage, size: currentSize, pages }
 }
 
 async function doSearch() {
@@ -253,10 +275,11 @@ async function doSearch() {
     const { query, headers } = buildSearchQuery()
     const res = await fetch(`${getApiBase()}/units?${query}`, { headers })
     const data = await res.json()
-    const items = Array.isArray(data)
-      ? data
-      : data.items || data.results || data.data || []
-    searchResults.value = items
+    const parsed = parseSearchPageResponse(data)
+    searchResults.value = parsed.items
+    searchTotal.value = parsed.total
+    searchPage.value = parsed.page
+    searchPages.value = parsed.pages
   } catch (e) {
     console.error(e)
   } finally {
@@ -270,6 +293,7 @@ function onFilterApply({ filters, filterModes, sortBy, sortOrder }) {
   searchSortBy.value = sortBy
   searchSortOrder.value = sortOrder
   searchQuery.value = searchFilters.value.title || ''
+  searchPage.value = 1
   showFilterModal.value = false
   doSearch()
 }
@@ -311,7 +335,18 @@ function onFilterReset() {
   searchSortBy.value = 'title'
   searchSortOrder.value = 'asc'
   searchQuery.value = ''
+  searchPage.value = 1
   showFilterModal.value = false
+  doSearch()
+}
+
+const canPrevPage = computed(() => searchPage.value > 1)
+const canNextPage = computed(() => searchPage.value < searchPages.value)
+
+function goSearchPage(p) {
+  const target = Number(p)
+  if (target < 1 || target > searchPages.value) return
+  searchPage.value = target
   doSearch()
 }
 
@@ -778,6 +813,11 @@ function nonCommandUnits() {
                 <button class="btn-add-unit" @click="addUnit(u.unit_id)">+</button>
               </div>
             </div>
+          </div>
+          <div v-if="searchPages > 1" class="pagination">
+            <button class="page-btn" :disabled="!canPrevPage" @click="goSearchPage(searchPage - 1)">‹</button>
+            <span class="page-info">{{ searchPage }} / {{ searchPages }}</span>
+            <button class="page-btn" :disabled="!canNextPage" @click="goSearchPage(searchPage + 1)">›</button>
           </div>
         </div>
 
@@ -1413,5 +1453,47 @@ function nonCommandUnits() {
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 8px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.page-btn {
+  width: 28px;
+  height: 28px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  min-width: 50px;
+  text-align: center;
 }
 </style>
