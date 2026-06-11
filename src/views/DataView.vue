@@ -196,9 +196,10 @@ function barColor(current, max) {
                   <span v-else-if="unit.stunned" class="stunned-badge">ОГЛУШЁН</span>
                 </div>
                 <div class="unit-sub">
-                  {{ unit.unitType }} · РЗ {{ unit.sz }} · ДВ {{ unit.currentMv }}
-                  <span v-if="unit.baseMv !== unit.currentMv && activeGame.turn > 1" class="changed-stat">(было {{ unit.baseMv }})</span>
+                  {{ unit.unitType }} · РЗ {{ unit.sz }} · ДВ {{ unit.currentMv }} · TMM {{ unit.currentTmm }}
+                  <span v-if="unit.baseMv !== unit.currentMv" class="changed-stat">(было {{ unit.baseMv }})</span>
                   <span v-if="unit.toHitMod" class="mod-badge">Попадание +{{ unit.toHitMod }}</span>
+                  <span v-if="unit.toHitModMelee" class="mod-badge">Ближний бой +{{ unit.toHitModMelee }}</span>
                   <span v-if="unit.heatPerShot" class="mod-badge">+{{ unit.heatPerShot }} нагрев</span>
                 </div>
               </div>

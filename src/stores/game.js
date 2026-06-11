@@ -21,6 +21,19 @@ function parseMv(mvStr) {
   return m ? parseInt(m[1], 10) : 0
 }
 
+function isJumpMove(mvStr) {
+  return /j/i.test(String(mvStr))
+}
+
+function calcTmm(move) {
+  if (move <= 4) return 0
+  if (move <= 8) return 1
+  if (move <= 12) return 2
+  if (move <= 18) return 3
+  if (move <= 34) return 4
+  return 5
+}
+
 function generateInstanceId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
 }
@@ -37,6 +50,8 @@ export function createGameUnit(unit) {
     pv: unit.pv || 0,
     sz: unit.sz || 1,
     baseMv,
+    isJump: isJumpMove(unit.mv),
+    baseTmm: calcTmm(baseMv),
     maxArmor: unit.armor || 0,
     maxStruc: unit.struc || 0,
     maxThreshold: unit.threshold || 0,
@@ -130,14 +145,13 @@ export function recalcUnit(u) {
   if (u.critCategory === 'dropship' && engineHits >= 3) destroyed = true
   else if (u.critCategory !== 'dropship' && engineHits >= 2) destroyed = true
 
-  u.toHitMod = toHitMod
   u.damagePenalty = damagePenalty
   u.damageFactor = damageFactor
   u.heatPerShot = heatPerShot
   u.stunned = stunned
   u.destroyed = destroyed
 
-  // Recalc move
+  // Recalc move (crits, then heat)
   let currentMv = u.baseMv
   if (u.critCategory === 'vehicle') {
     currentMv = Math.round(currentMv * moveFactor)
@@ -146,7 +160,34 @@ export function recalcUnit(u) {
     const loss = Math.max(2, Math.round(currentMv / 2))
     currentMv = Math.max(0, currentMv - loss)
   }
+
+  // Heat movement effects: heat does not affect jumps
+  const specs = (u.specials || '').toUpperCase().split(/[\s,]+/)
+  const hasTsm = specs.includes('TSM')
+  const hasItsm = specs.includes('I-TSM')
+
+  if (!u.isJump) {
+    if ((hasTsm || hasItsm) && u.heat >= 1) {
+      // First heat point gives +2" instead of -2"; each further point is -2"
+      currentMv = Math.max(0, currentMv + 4 - u.heat * 2)
+    } else {
+      currentMv = Math.max(0, currentMv - u.heat * 2)
+    }
+  }
   u.currentMv = currentMv
+
+  // TMM: based on current move, -1 if heat >= 2
+  const tmmPenalty = u.heat >= 2 ? 1 : 0
+  u.currentTmm = Math.max(0, calcTmm(currentMv) - tmmPenalty)
+
+  // Heat to-hit effects: weapon attacks always penalized, melee depends on TSM/I-TSM
+  let heatWeaponToHit = u.heat
+  let heatMeleeToHit = 0
+  if (hasItsm) {
+    heatMeleeToHit += 2
+  }
+  u.toHitMod = toHitMod + heatWeaponToHit
+  u.toHitModMelee = toHitMod + heatMeleeToHit
 
   // Recalc damage values
   u.currentShort = Math.max(0, Math.floor(u.baseShort * damageFactor) - damagePenalty)
@@ -252,6 +293,7 @@ export const useGameStore = defineStore('game', () => {
     const unit = roster?.units.find((u) => u.instanceId === instanceId)
     if (!unit) return
     unit.heat = Math.max(0, heat)
+    recalcUnit(unit)
     persist()
   }
 
