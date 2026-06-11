@@ -1,7 +1,7 @@
 <script setup>
 import IconSearch from "./IconSearch.vue";
 import IconForce from "./IconForce.vue";
-import IconData from "./IconData.vue";
+import IconDice from "./IconDice.vue";
 </script>
 
 <template>
@@ -27,7 +27,7 @@ import IconData from "./IconData.vue";
       class="nav-item"
       :class="{ active: $route.name === 'data' }"
     >
-      <IconData class="nav-icon" />
+      <IconDice class="nav-icon" />
       <span>Игра</span>
     </router-link>
   </nav>
