@@ -22,10 +22,14 @@ import IconData from "./IconData.vue";
       <IconForce class="nav-icon" />
       <span>Формации</span>
     </router-link>
-    <div class="nav-item">
+    <router-link
+      to="/data"
+      class="nav-item"
+      :class="{ active: $route.name === 'data' }"
+    >
       <IconData class="nav-icon" />
-      <span>DATA</span>
-    </div>
+      <span>Игра</span>
+    </router-link>
   </nav>
 </template>
 
