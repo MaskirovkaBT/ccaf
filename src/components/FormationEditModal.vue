@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { useCatalogStore } from '../stores/catalog.js'
 import { getFormationType, formationTypes } from '../data/formations.js'
 import { translateRole } from '../data/roleMap.js'
@@ -14,6 +15,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save', 'remove'])
 
+const router = useRouter()
 const store = useCatalogStore()
 const { hangarUnits } = storeToRefs(store)
 
@@ -188,6 +190,10 @@ watch(selectedType, ensureAbilityDefaults)
 
 function addUnit(id) {
   localUnitIds.value.push(Number(id))
+}
+
+function openMech(unitId) {
+  router.push({ name: 'mech', params: { id: unitId } })
 }
 
 function removeUnit(idx) {
@@ -690,6 +696,7 @@ function nonCommandUnits() {
             v-for="(u, idx) in resolvedUnits"
             :key="idx"
             class="current-unit-row"
+            @click="openMech(u.unit_id)"
           >
             <div class="pick-icon">
               <UnitIcon :type="u.unit_type" />
@@ -704,7 +711,7 @@ function nonCommandUnits() {
                 {{ translateRole(u.role) }}
               </div>
             </div>
-            <button class="btn-remove-unit" @click="removeUnit(idx)">
+            <button class="btn-remove-unit" @click.stop="removeUnit(idx)">
               ×
             </button>
           </div>
@@ -1340,6 +1347,16 @@ function nonCommandUnits() {
   padding: 6px 8px;
   border: 1px solid var(--border-color);
   background: rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.current-unit-row:hover {
+  border-color: var(--accent-green);
+  background: rgba(0, 255, 65, 0.04);
+}
+
+.current-unit-row:hover .pick-name {
+  color: var(--accent-green);
 }
 
 .btn-remove-unit {

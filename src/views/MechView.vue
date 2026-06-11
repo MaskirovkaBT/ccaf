@@ -55,7 +55,7 @@ watch(
   <div class="page">
     <div v-if="unit" class="card">
       <div class="header">
-        <div class="back-btn" @click="$router.push('/')">← КАТАЛОГ</div>
+        <div class="back-btn" @click="$router.back()">←</div>
         <div class="header-top">
           <div>
             <div class="mech-name">{{ unit.title }}</div>
@@ -202,7 +202,7 @@ watch(
     </div>
 
     <div v-else class="not-found">
-      <div class="back-btn" @click="$router.push('/')">← КАТАЛОГ</div>
+      <div class="back-btn" @click="$router.back()">←</div>
       <p>Юнит не найден</p>
     </div>
   </div>

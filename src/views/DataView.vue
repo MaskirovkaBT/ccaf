@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { useCatalogStore } from '../stores/catalog.js'
 import { useGameStore } from '../stores/game.js'
 import { getCritTable, getCritCategory } from '../data/critTables.js'
 import UnitIcon from '../components/UnitIcon.vue'
 
+const router = useRouter()
 const catalog = useCatalogStore()
 const game = useGameStore()
 const { formations } = storeToRefs(catalog)
@@ -71,6 +73,10 @@ function changeHeat(fid, instanceId, delta) {
 
 function rosterPv(units) {
   return units.reduce((s, u) => s + (u.pv || 0), 0)
+}
+
+function openMech(unitId) {
+  router.push({ name: 'mech', params: { id: unitId } })
 }
 
 function aliveCount(units) {
@@ -191,7 +197,7 @@ function barColor(current, max) {
               </div>
               <div class="unit-info">
                 <div class="unit-title" :class="{ destroyed: unit.destroyed }">
-                  {{ unit.title }}
+                  <span class="unit-title-text" @click="openMech(unit.unitId)">{{ unit.title }}</span>
                   <span v-if="unit.destroyed" class="destroyed-badge">УНИЧТОЖЕН</span>
                   <span v-else-if="unit.stunned" class="stunned-badge">ОГЛУШЁН</span>
                 </div>
@@ -557,6 +563,14 @@ function barColor(current, max) {
 .unit-title.destroyed {
   text-decoration: line-through;
   color: var(--text-dim);
+}
+
+.unit-title-text {
+  cursor: pointer;
+}
+
+.unit-title:not(.destroyed) .unit-title-text:hover {
+  color: var(--accent-green);
 }
 
 .destroyed-badge {
