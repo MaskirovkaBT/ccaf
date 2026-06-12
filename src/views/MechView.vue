@@ -1,137 +1,142 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { useCatalogStore, getApiBase } from "../stores/catalog.js";
-import { getCachedImageBlobUrl } from "../utils/imageCache.js";
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useCatalogStore, getApiBase } from '../stores/catalog.js'
+import { getCachedImageBlobUrl } from '../utils/imageCache.js'
 
-const props = defineProps({ id: String });
-const store = useCatalogStore();
+const props = defineProps({
+  id: {
+    type: String,
+    required: true,
+  },
+})
+const store = useCatalogStore()
 
-const unit = computed(() => store.unit);
-const loading = computed(() => store.loading);
+const unit = computed(() => store.unit)
+const loading = computed(() => store.loading)
 
-const imageModalOpen = ref(false);
-const imageError = ref(false);
-const displayImageUrl = ref(null);
-const objectUrlToRevoke = ref(null);
-let currentImageRequestUrl = null;
+const imageModalOpen = ref(false)
+const imageError = ref(false)
+const displayImageUrl = ref(null)
+const objectUrlToRevoke = ref(null)
+let currentImageRequestUrl = null
 
 const resolvedImageUrl = computed(() => {
-  if (!unit.value?.image_url) return null;
-  const url = unit.value.image_url;
-  if (/^https?:\/\//i.test(url)) return url;
-  const base = getApiBase().replace(/\/$/, "");
-  return `${base}/${url.replace(/^\//, "")}`;
-});
+  if (!unit.value?.image_url) return null
+  const url = unit.value.image_url
+  if (/^https?:\/\//i.test(url)) return url
+  const base = getApiBase().replace(/\/$/, '')
+  return `${base}/${url.replace(/^\//, '')}`
+})
 
-const hasImage = computed(() => !!resolvedImageUrl.value && !imageError.value);
+const hasImage = computed(() => !!resolvedImageUrl.value && !imageError.value)
 
 function openImageModal() {
-  if (hasImage.value) imageModalOpen.value = true;
+  if (hasImage.value) imageModalOpen.value = true
 }
 
 function closeImageModal() {
-  imageModalOpen.value = false;
+  imageModalOpen.value = false
 }
 
 function onImageError() {
-  imageError.value = true;
+  imageError.value = true
 }
 
 async function updateDisplayImage(url) {
-  currentImageRequestUrl = url;
+  currentImageRequestUrl = url
 
   if (objectUrlToRevoke.value) {
-    URL.revokeObjectURL(objectUrlToRevoke.value);
-    objectUrlToRevoke.value = null;
+    URL.revokeObjectURL(objectUrlToRevoke.value)
+    objectUrlToRevoke.value = null
   }
-  displayImageUrl.value = null;
+  displayImageUrl.value = null
 
-  if (!url) return;
+  if (!url) return
 
-  const blobUrl = await getCachedImageBlobUrl(url);
+  const blobUrl = await getCachedImageBlobUrl(url)
 
-  if (currentImageRequestUrl !== url) return;
+  if (currentImageRequestUrl !== url) return
 
-  if (blobUrl && blobUrl.startsWith("blob:")) {
-    objectUrlToRevoke.value = blobUrl;
+  if (blobUrl && blobUrl.startsWith('blob:')) {
+    objectUrlToRevoke.value = blobUrl
   }
-  displayImageUrl.value = blobUrl || url;
+  displayImageUrl.value = blobUrl || url
 }
 
 function onKeydown(e) {
-  if (e.key === "Escape") closeImageModal();
+  if (e.key === 'Escape') closeImageModal()
 }
 
-watch(imageModalOpen, (open) => {
-  if (open) document.addEventListener("keydown", onKeydown);
-  else document.removeEventListener("keydown", onKeydown);
-});
+watch(imageModalOpen, open => {
+  if (open) document.addEventListener('keydown', onKeydown)
+  else document.removeEventListener('keydown', onKeydown)
+})
 
 watch(
   () => unit.value?.image_url,
   () => {
-    imageError.value = false;
-    imageModalOpen.value = false;
+    imageError.value = false
+    imageModalOpen.value = false
   }
-);
+)
 
 watch(
   resolvedImageUrl,
-  (url) => {
-    updateDisplayImage(url);
+  url => {
+    updateDisplayImage(url)
   },
   { immediate: true }
-);
+)
 
 const parsedSpecials = computed(() => {
-  if (!unit.value?.specials) return [];
+  if (!unit.value?.specials) return []
   return unit.value.specials
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-});
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+})
 
 const tmm = computed(() => {
-  if (!unit.value?.mv) return 0;
-  const match = String(unit.value.mv).match(/\d+/);
-  if (!match) return 0;
-  const move = parseInt(match[0], 10);
-  if (move <= 4) return 0;
-  if (move <= 8) return 1;
-  if (move <= 12) return 2;
-  if (move <= 18) return 3;
-  if (move <= 34) return 4;
-  return 5;
-});
+  if (!unit.value?.mv) return 0
+  const match = String(unit.value.mv).match(/\d+/)
+  if (!match) return 0
+  const move = parseInt(match[0], 10)
+  if (move <= 4) return 0
+  if (move <= 8) return 1
+  if (move <= 12) return 2
+  if (move <= 18) return 3
+  if (move <= 34) return 4
+  return 5
+})
 
-const inHangar = computed(() => store.isInHangar(props.id));
+const inHangar = computed(() => store.isInHangar(props.id))
 
 function toggleHangar() {
-  store.toggleHangar(props.id);
+  store.toggleHangar(props.id)
 }
 
 function barPct(val, max) {
-  return Math.min(100, Math.round((val / max) * 100));
+  return Math.min(100, Math.round((val / max) * 100))
 }
 
 onMounted(() => {
-  store.loadUnit(props.id);
-});
+  store.loadUnit(props.id)
+})
 
 onUnmounted(() => {
-  document.removeEventListener("keydown", onKeydown);
+  document.removeEventListener('keydown', onKeydown)
   if (objectUrlToRevoke.value) {
-    URL.revokeObjectURL(objectUrlToRevoke.value);
-    objectUrlToRevoke.value = null;
+    URL.revokeObjectURL(objectUrlToRevoke.value)
+    objectUrlToRevoke.value = null
   }
-});
+})
 
 watch(
   () => props.id,
-  (newId) => {
-    store.loadUnit(newId);
-  },
-);
+  newId => {
+    store.loadUnit(newId)
+  }
+)
 </script>
 
 <template>
@@ -142,21 +147,15 @@ watch(
         <div class="header-top">
           <div>
             <div class="mech-name">{{ unit.title }}</div>
-            <div class="mech-variant">
-              {{ unit.unit_type }} · РЗ {{ unit.sz }}
-            </div>
-            <div
-              class="hangar-toggle"
-              :class="{ active: inHangar }"
-              @click="toggleHangar"
-            >
-              {{ inHangar ? "★ В ангаре" : "☆ В ангар" }}
+            <div class="mech-variant">{{ unit.unit_type }} · РЗ {{ unit.sz }}</div>
+            <div class="hangar-toggle" :class="{ active: inHangar }" @click="toggleHangar">
+              {{ inHangar ? '★ В ангаре' : '☆ В ангар' }}
             </div>
           </div>
           <div class="type-badge">{{ unit.unit_type }}</div>
         </div>
         <div class="mech-meta">
-          <span>Роль: {{ unit.role || "—" }}</span>
+          <span>Роль: {{ unit.role || '—' }}</span>
           <span>БО {{ unit.pv }}</span>
           <span>ДВ {{ unit.mv }}</span>
         </div>
@@ -248,30 +247,21 @@ watch(
           <div class="bar-container">
             <div class="bar-label">БР</div>
             <div class="bar-track">
-              <div
-                class="bar-fill"
-                :style="{ width: barPct(unit.armor, 12) + '%' }"
-              ></div>
+              <div class="bar-fill" :style="{ width: barPct(unit.armor, 12) + '%' }"></div>
             </div>
             <div class="bar-num">{{ unit.armor }}</div>
           </div>
           <div class="bar-container">
             <div class="bar-label">СТР</div>
             <div class="bar-track">
-              <div
-                class="bar-fill struct"
-                :style="{ width: barPct(unit.struc, 8) + '%' }"
-              ></div>
+              <div class="bar-fill struct" :style="{ width: barPct(unit.struc, 8) + '%' }"></div>
             </div>
             <div class="bar-num">{{ unit.struc }}</div>
           </div>
           <div class="bar-container">
             <div class="bar-label">ТЯГ</div>
             <div class="bar-track">
-              <div
-                class="bar-fill thr"
-                :style="{ width: barPct(unit.threshold, 6) + '%' }"
-              ></div>
+              <div class="bar-fill thr" :style="{ width: barPct(unit.threshold, 6) + '%' }"></div>
             </div>
             <div class="bar-num">{{ unit.threshold }}</div>
           </div>
@@ -281,9 +271,7 @@ watch(
       <div class="section">
         <div class="section-title">Особые способности</div>
         <div class="specials-list">
-          <span v-for="(s, i) in parsedSpecials" :key="i" class="special-tag">{{
-            s
-          }}</span>
+          <span v-for="(s, i) in parsedSpecials" :key="i" class="special-tag">{{ s }}</span>
         </div>
       </div>
 
@@ -292,19 +280,11 @@ watch(
         <span>БО {{ unit.pv }} · РЗ {{ unit.sz }} · {{ unit.unit_type }}</span>
       </div>
 
-      <div
-        v-if="imageModalOpen"
-        class="image-modal"
-        @click="closeImageModal"
-      >
+      <div v-if="imageModalOpen" class="image-modal" @click="closeImageModal">
         <div class="image-modal-backdrop"></div>
         <div class="image-modal-close" @click="closeImageModal">×</div>
         <div class="image-modal-content" @click.stop>
-          <img
-            :src="displayImageUrl"
-            :alt="unit.title"
-            class="image-modal-img"
-          />
+          <img :src="displayImageUrl" :alt="unit.title" class="image-modal-img" />
         </div>
       </div>
     </div>
@@ -554,11 +534,7 @@ watch(
 
 .bar-fill {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--accent-green-dim),
-    var(--accent-green)
-  );
+  background: linear-gradient(90deg, var(--accent-green-dim), var(--accent-green));
 }
 
 .bar-fill.struct {
@@ -616,7 +592,11 @@ watch(
     linear-gradient(rgba(0, 255, 65, 0.04) 1px, transparent 1px),
     radial-gradient(ellipse at center, rgba(0, 255, 65, 0.05) 0%, transparent 70%),
     var(--bg-secondary);
-  background-size: 18px 18px, 18px 18px, 100% 100%, 100% 100%;
+  background-size:
+    18px 18px,
+    18px 18px,
+    100% 100%,
+    100% 100%;
   cursor: pointer;
 }
 

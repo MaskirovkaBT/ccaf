@@ -1,32 +1,20 @@
 <script setup>
-import IconSearch from "./IconSearch.vue";
-import IconForce from "./IconForce.vue";
-import IconDice from "./IconDice.vue";
+import IconSearch from './IconSearch.vue'
+import IconForce from './IconForce.vue'
+import IconDice from './IconDice.vue'
 </script>
 
 <template>
   <nav class="bottom-nav">
-    <router-link
-      to="/"
-      class="nav-item"
-      :class="{ active: $route.name === 'search' }"
-    >
+    <router-link to="/" class="nav-item" :class="{ active: $route.name === 'search' }">
       <IconSearch class="nav-icon" />
       <span>Поиск</span>
     </router-link>
-    <router-link
-      to="/force"
-      class="nav-item"
-      :class="{ active: $route.name === 'force' }"
-    >
+    <router-link to="/force" class="nav-item" :class="{ active: $route.name === 'force' }">
       <IconForce class="nav-icon" />
       <span>Формации</span>
     </router-link>
-    <router-link
-      to="/data"
-      class="nav-item"
-      :class="{ active: $route.name === 'data' }"
-    >
+    <router-link to="/data" class="nav-item" :class="{ active: $route.name === 'data' }">
       <IconDice class="nav-icon" />
       <span>Игра</span>
     </router-link>

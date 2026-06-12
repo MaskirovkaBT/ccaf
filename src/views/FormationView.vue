@@ -17,28 +17,26 @@ const formationUnitsMap = ref(new Map())
 onMounted(async () => {
   await store.loadEras()
   await store.loadFactions()
-  await store.loadRoles();
+  await store.loadRoles()
   await store.loadTypes()
   await store.loadHangarUnits()
   await loadAllFormationUnits()
 })
 
 async function loadAllFormationUnits() {
-  const allIds = formations.value.flatMap((f) => f.units || [])
+  const allIds = formations.value.flatMap(f => f.units || [])
   const uniqueIds = [...new Set(allIds.map(Number))]
   if (uniqueIds.length === 0) return
   const units = await store.resolveUnits(uniqueIds)
   const map = new Map()
-  units.forEach((u) => map.set(u.unit_id, u))
+  units.forEach(u => map.set(u.unit_id, u))
   formationUnitsMap.value = map
 }
 
 const formationsWithMeta = computed(() => {
-  return formations.value.map((f) => {
+  return formations.value.map(f => {
     const type = getFormationType(f.type)
-    const units = (f.units || [])
-      .map((id) => formationUnitsMap.value.get(Number(id)))
-      .filter(Boolean)
+    const units = (f.units || []).map(id => formationUnitsMap.value.get(Number(id))).filter(Boolean)
     const isValid = units.length >= 3
     return { ...f, typeMeta: type, units, isValid }
   })
@@ -54,7 +52,7 @@ function openNew() {
 }
 
 function openEdit(f) {
-  editingFormation.value = formations.value.find((fm) => fm.id === f.id) ?? null
+  editingFormation.value = formations.value.find(fm => fm.id === f.id) ?? null
   editModalOpen.value = true
 }
 
@@ -131,10 +129,7 @@ function formatEffect(text) {
         </div>
 
         <div class="card-meta">
-          <span
-            class="valid-badge"
-            :class="f.isValid ? 'ok' : 'bad'"
-          >
+          <span class="valid-badge" :class="f.isValid ? 'ok' : 'bad'">
             {{ f.isValid ? 'Действует' : 'Эффект не действует' }}
           </span>
         </div>
@@ -144,36 +139,24 @@ function formatEffect(text) {
         </div>
 
         <div class="unit-chips">
-          <div
-            v-for="(u, i) in f.units.slice(0, 6)"
-            :key="i"
-            class="unit-chip"
-          >
+          <div v-for="(u, i) in f.units.slice(0, 6)" :key="i" class="unit-chip">
             <UnitIcon :type="u.unit_type" />
             <span class="chip-badge" :class="weightClassFromSz(u.sz)">
               {{ szLabel(u.sz) }}
             </span>
           </div>
-          <div v-if="f.units.length > 6" class="chip-more">
-            +{{ f.units.length - 6 }}
-          </div>
+          <div v-if="f.units.length > 6" class="chip-more">+{{ f.units.length - 6 }}</div>
         </div>
 
         <div v-if="f.units.length" class="unit-roles">
-          <span
-            v-for="(u, i) in f.units"
-            :key="i"
-            class="role-tag"
-          >
+          <span v-for="(u, i) in f.units" :key="i" class="role-tag">
             {{ translateRole(u.role) }}
           </span>
         </div>
 
         <div class="card-footer">
           <span>БЕ: {{ f.units.length }}</span>
-          <span v-if="f.typeMeta?.optimalRole">
-            Опт. роль: {{ f.typeMeta.optimalRole }}
-          </span>
+          <span v-if="f.typeMeta?.optimalRole"> Опт. роль: {{ f.typeMeta.optimalRole }} </span>
         </div>
       </div>
     </div>

@@ -10,15 +10,15 @@ const routes = [
   { path: '/', name: 'search', component: SearchView },
   { path: '/mech/:id', name: 'mech', component: MechView, props: true },
   { path: '/force', name: 'force', component: FormationView },
-  { path: '/data', name: 'data', component: DataView }
+  { path: '/data', name: 'data', component: DataView },
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(to => {
   const hasServer = !!localStorage.getItem('ccaf_api_url')
   if (!hasServer && to.name !== 'setup') {
     return { name: 'setup', replace: true }

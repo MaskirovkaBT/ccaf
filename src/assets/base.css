@@ -23,7 +23,9 @@
   --font-display: 'Rajdhani', sans-serif;
 }
 
-html, body, #app {
+html,
+body,
+#app {
   width: 100%;
   min-height: 100vh;
   background: var(--bg-primary);
@@ -49,8 +51,8 @@ html, body, #app {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0,0,0,0.03) 2px,
-    rgba(0,0,0,0.03) 4px
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
   );
   pointer-events: none;
   z-index: 100;

@@ -1,5 +1,4 @@
-<script setup>
-</script>
+<script setup></script>
 
 <template>
   <svg
@@ -28,5 +27,4 @@
   </svg>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

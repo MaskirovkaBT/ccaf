@@ -89,9 +89,7 @@ export const formationTypes = [
     engName: 'Fast Assault Lance / Star / Level II',
     category: 'ground',
     optimalRole: null,
-    requirements: [
-      'Каждая БЕ должна иметь хотя бы 10" ДВ или тип перемещения «прыж»',
-    ],
+    requirements: ['Каждая БЕ должна иметь хотя бы 10" ДВ или тип перемещения «прыж»'],
     effect:
       'Аналогичен эффекту обычного штурмового подразделения. Кроме того, каждый ход до 2 боевых единиц в быстром штурмовом подразделении могут также получить бонусную ОСП «Посторонись!» (стр. 122). Эти бонусные ОСП могут сочетаться с бонусными способностями пилота от обычного эффекта штурмового подразделения.',
     parent: 'assault',
@@ -150,9 +148,7 @@ export const formationTypes = [
     engName: 'Fire Lance / Star / Level II',
     category: 'ground',
     optimalRole: 'Ракетоносец',
-    requirements: [
-      'Хотя бы 75% БЕ должны иметь роль «Ракетоносец» и/или «Снайпер»',
-    ],
+    requirements: ['Хотя бы 75% БЕ должны иметь роль «Ракетоносец» и/или «Снайпер»'],
     effect:
       'В начале каждого хода до половины боевых единиц огневого подразделения (с округлением вниз) могут получить бонусную ОСП «Снайпер» (стр. 123) до конца хода. Боевые единицы, которые были уничтожены или покинули поле боя (отступили), считаются выбывшими из состава подразделения.',
     variants: ['fire_support', 'artillery_fire', 'direct_fire', 'anti_air'],
@@ -163,9 +159,7 @@ export const formationTypes = [
     engName: 'Fire Support Lance / Star / Level II',
     category: 'ground',
     optimalRole: null,
-    requirements: [
-      'Хотя бы 3 БЕ должны иметь особую способность НПН (Стрельба непрямой наводкой)',
-    ],
+    requirements: ['Хотя бы 3 БЕ должны иметь особую способность НПН (Стрельба непрямой наводкой)'],
     effect:
       'В начале каждого хода до половины боевых единиц подразделения (с округлением вниз) могут получить бонусную ОСП «Мастер НПН» (стр. 120) до конца хода.',
     parent: 'fire',
@@ -176,9 +170,7 @@ export const formationTypes = [
     engName: 'Artillery Fire Lance / Star / Level II',
     category: 'ground',
     optimalRole: null,
-    requirements: [
-      'Хотя бы 2 БЕ должны иметь способности группы АРТ (Артиллерия)',
-    ],
+    requirements: ['Хотя бы 2 БЕ должны иметь способности группы АРТ (Артиллерия)'],
     effect:
       'В начале каждого хода до половины боевых единиц артиллерийского огневого подразделения (с округлением вниз) могут получить ОСП «Мастер артиллерии» (стр. 120) до конца хода.',
     parent: 'fire',
@@ -436,9 +428,7 @@ export const formationTypes = [
     engName: 'Interceptor Squadron',
     category: 'air',
     optimalRole: null,
-    requirements: [
-      'Более 50% боевых единиц в звене должны иметь роль «Перехватчик»',
-    ],
+    requirements: ['Более 50% боевых единиц в звене должны иметь роль «Перехватчик»'],
     effect:
       'Все боевые единицы в звене перехвата с ТЯГ 9 или меньше получают ОСП «Лихач» (стр. 119). Кроме того, не более 2 истребителей в этом звене могут также получить ОСП «Любимая дистанция (ДАЛ)» (стр. 119).',
   },
@@ -494,9 +484,7 @@ export const formationTypes = [
     engName: 'Strike Squadron',
     category: 'air',
     optimalRole: null,
-    requirements: [
-      'Более 50% боевых единиц должны иметь роль «Штурмовик» или «Истребитель»',
-    ],
+    requirements: ['Более 50% боевых единиц должны иметь роль «Штурмовик» или «Истребитель»'],
     effect:
       'До 50% боевых единиц звена получают бонусную ОСП «Лихач» (стр. 119). Все прочие БЕ в звене получают бонусную ОСП «Меткая птичка» (стр. 120).',
   },
@@ -519,9 +507,7 @@ export const formationTypes = [
     engName: 'Transport Squadron',
     category: 'air',
     optimalRole: null,
-    requirements: [
-      'Как минимум 50% боевых единиц должны иметь роль «Транспорт»',
-    ],
+    requirements: ['Как минимум 50% боевых единиц должны иметь роль «Транспорт»'],
     effect:
       'Выберите одну из этих бонусных ОСП: «Атмосферный лётчик» (стр. 116), «Знаток турбулентности» (стр. 118–119) или «Специалист по эвакуации» (стр. 123). Все БЕ с ролью «Транспорт» в этом подразделении получают эту бонусную ОСП.',
     abilityConfig: {
@@ -537,17 +523,17 @@ export const formationTypes = [
 ]
 
 export function getFormationType(id) {
-  return formationTypes.find((f) => f.id === id) || null
+  return formationTypes.find(f => f.id === id) || null
 }
 
 export function getGroundFormations() {
-  return formationTypes.filter((f) => f.category === 'ground')
+  return formationTypes.filter(f => f.category === 'ground')
 }
 
 export function getAirFormations() {
-  return formationTypes.filter((f) => f.category === 'air')
+  return formationTypes.filter(f => f.category === 'air')
 }
 
 export function getRootFormations() {
-  return formationTypes.filter((f) => !f.parent)
+  return formationTypes.filter(f => !f.parent)
 }

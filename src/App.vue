@@ -36,7 +36,9 @@ import BottomNav from './components/BottomNav.vue'
 /* Route transition */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.25s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide-fade-enter-from {

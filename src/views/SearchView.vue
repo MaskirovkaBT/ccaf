@@ -1,11 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "../stores/catalog.js";
-import UnitIcon from "../components/UnitIcon.vue";
-import FilterModal from "../components/FilterModal.vue";
+import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useCatalogStore } from '../stores/catalog.js'
+import UnitIcon from '../components/UnitIcon.vue'
+import FilterModal from '../components/FilterModal.vue'
 
-const store = useCatalogStore();
+const store = useCatalogStore()
 const {
   eras,
   factions,
@@ -19,113 +19,113 @@ const {
   sortOrder,
   loading,
   error,
-} = storeToRefs(store);
+} = storeToRefs(store)
 
-const totalPages = computed(() => Math.ceil(total.value / size.value) || 1);
-const factionOpen = ref(false);
-const filterModalOpen = ref(false);
-const selectedFactionCount = computed(() => filters.value.faction_id.length);
+const totalPages = computed(() => Math.ceil(total.value / size.value) || 1)
+const factionOpen = ref(false)
+const filterModalOpen = ref(false)
+const selectedFactionCount = computed(() => filters.value.faction_id.length)
 
 const activeFilterCount = computed(() => {
-  let c = 0;
-  if (filters.value.era_id != null) c++;
-  if (filters.value.faction_id.length > 0) c++;
-  if (filters.value.unit_type) c++;
-  if (filters.value.title) c++;
-  if (filters.value.role) c++;
-  if (filters.value.specials) c++;
+  let c = 0
+  if (filters.value.era_id != null) c++
+  if (filters.value.faction_id.length > 0) c++
+  if (filters.value.unit_type) c++
+  if (filters.value.title) c++
+  if (filters.value.role) c++
+  if (filters.value.specials) c++
   const numericKeys = [
-    "pv",
-    "sz",
-    "short",
-    "medium",
-    "long",
-    "extreme",
-    "ov",
-    "armor",
-    "struc",
-    "threshold",
-    "mv",
-  ];
-  numericKeys.forEach((k) => {
-    const v = filters.value[k];
-    if (v !== "" && v != null) c++;
-  });
-  return c;
-});
+    'pv',
+    'sz',
+    'short',
+    'medium',
+    'long',
+    'extreme',
+    'ov',
+    'armor',
+    'struc',
+    'threshold',
+    'mv',
+  ]
+  numericKeys.forEach(k => {
+    const v = filters.value[k]
+    if (v !== '' && v != null) c++
+  })
+  return c
+})
 
-let debounceTimer = null;
+let debounceTimer = null
 function debouncedLoad() {
-  clearTimeout(debounceTimer);
+  clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
-    store.setPage(1);
-    store.loadUnits();
-  }, 300);
+    store.setPage(1)
+    store.loadUnits()
+  }, 300)
 }
 
 function applyFilters() {
-  store.setPage(1);
-  store.loadUnits();
+  store.setPage(1)
+  store.loadUnits()
 }
 
 function toggleFaction(id) {
-  const arr = filters.value.faction_id;
-  const idx = arr.indexOf(id);
+  const arr = filters.value.faction_id
+  const idx = arr.indexOf(id)
   if (idx === -1) {
-    arr.push(id);
+    arr.push(id)
   } else {
-    arr.splice(idx, 1);
+    arr.splice(idx, 1)
   }
-  store.setPage(1);
-  store.loadUnits();
+  store.setPage(1)
+  store.loadUnits()
 }
 
 function toggleSortOrder() {
-  sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
-  applyFilters();
+  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  applyFilters()
 }
 
 function prevPage() {
   if (page.value > 1) {
-    store.setPage(page.value - 1);
-    store.loadUnits();
+    store.setPage(page.value - 1)
+    store.loadUnits()
   }
 }
 
 function nextPage() {
   if (page.value < totalPages.value) {
-    store.setPage(page.value + 1);
-    store.loadUnits();
+    store.setPage(page.value + 1)
+    store.loadUnits()
   }
 }
 
 function weightClassFromSz(sz) {
-  if (sz >= 4) return "assault";
-  if (sz === 3) return "heavy";
-  if (sz === 2) return "medium";
-  return "light";
+  if (sz >= 4) return 'assault'
+  if (sz === 3) return 'heavy'
+  if (sz === 2) return 'medium'
+  return 'light'
 }
 
 function szLabel(sz) {
-  const map = { 4: "ТЯЖ", 3: "СРД", 2: "ЛГК", 1: "ЛЕГ" };
-  return map[sz] || "??";
+  const map = { 4: 'ТЯЖ', 3: 'СРД', 2: 'ЛГК', 1: 'ЛЕГ' }
+  return map[sz] || '??'
 }
 
 function damagePips(u) {
-  const pips = [];
-  for (let i = 0; i < (u.short || 0); i++) pips.push("s");
-  for (let i = 0; i < (u.medium || 0); i++) pips.push("m");
-  for (let i = 0; i < (u.long || 0); i++) pips.push("l");
-  return pips;
+  const pips = []
+  for (let i = 0; i < (u.short || 0); i++) pips.push('s')
+  for (let i = 0; i < (u.medium || 0); i++) pips.push('m')
+  for (let i = 0; i < (u.long || 0); i++) pips.push('l')
+  return pips
 }
 
 onMounted(() => {
-  store.loadEras();
-  store.loadFactions();
-  store.loadRoles();
-  store.loadTypes();
-  store.loadUnits();
-});
+  store.loadEras()
+  store.loadFactions()
+  store.loadRoles()
+  store.loadTypes()
+  store.loadUnits()
+})
 </script>
 
 <template>
@@ -133,21 +133,13 @@ onMounted(() => {
     <!-- ФИЛЬТРЫ -->
     <div class="filters-panel">
       <div class="filters-row">
-        <select
-          v-model="filters.era_id"
-          @change="applyFilters"
-          class="filter-select"
-        >
+        <select v-model="filters.era_id" class="filter-select" @change="applyFilters">
           <option :value="null">Все эры</option>
           <option v-for="e in eras" :key="e.era_id" :value="e.era_id">
             {{ e.title }}
           </option>
         </select>
-        <select
-          v-model="filters.unit_type"
-          @change="applyFilters"
-          class="filter-select"
-        >
+        <select v-model="filters.unit_type" class="filter-select" @change="applyFilters">
           <option value="">Все типы</option>
           <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
         </select>
@@ -156,20 +148,11 @@ onMounted(() => {
       <div class="filters-row">
         <div class="multi-select" :class="{ open: factionOpen }">
           <div class="multi-select-label" @click="factionOpen = !factionOpen">
-            <span
-              >Фракции
-              {{
-                selectedFactionCount > 0 ? `(${selectedFactionCount})` : ""
-              }}</span
-            >
-            <span class="chevron">{{ factionOpen ? "▲" : "▼" }}</span>
+            <span>Фракции {{ selectedFactionCount > 0 ? `(${selectedFactionCount})` : '' }}</span>
+            <span class="chevron">{{ factionOpen ? '▲' : '▼' }}</span>
           </div>
           <div class="multi-select-options" @click.stop>
-            <label
-              v-for="f in factions"
-              :key="f.faction_id"
-              class="multi-option"
-            >
+            <label v-for="f in factions" :key="f.faction_id" class="multi-option">
               <input
                 type="checkbox"
                 :checked="filters.faction_id.includes(f.faction_id)"
@@ -183,9 +166,9 @@ onMounted(() => {
 
       <input
         v-model="filters.title"
-        @input="debouncedLoad"
         placeholder="Поиск по названию..."
         class="filter-input"
+        @input="debouncedLoad"
       />
     </div>
 
@@ -206,13 +189,11 @@ onMounted(() => {
           <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
         </svg>
         <span class="filters-label">ФИЛЬТРЫ</span>
-        <span v-if="activeFilterCount > 0" class="filters-badge">{{
-          activeFilterCount
-        }}</span>
+        <span v-if="activeFilterCount > 0" class="filters-badge">{{ activeFilterCount }}</span>
       </button>
 
       <div class="toolbar-sort">
-        <select v-model="sortBy" @change="applyFilters" class="sort-select">
+        <select v-model="sortBy" class="sort-select" @change="applyFilters">
           <option value="title">Название</option>
           <option value="pv">Очки</option>
           <option value="role">Роль</option>
@@ -223,8 +204,8 @@ onMounted(() => {
           <option value="struc">Структура</option>
           <option value="mv">Скорость</option>
         </select>
-        <button @click="toggleSortOrder" class="sort-dir-btn">
-          {{ sortOrder === "asc" ? "▲" : "▼" }}
+        <button class="sort-dir-btn" @click="toggleSortOrder">
+          {{ sortOrder === 'asc' ? '▲' : '▼' }}
         </button>
       </div>
     </div>
@@ -233,12 +214,7 @@ onMounted(() => {
 
     <!-- СПИСОК ЮНИТОВ -->
     <div class="units-list">
-      <router-link
-        v-for="u in units"
-        :key="u.unit_id"
-        :to="`/mech/${u.unit_id}`"
-        class="unit-row"
-      >
+      <router-link v-for="u in units" :key="u.unit_id" :to="`/mech/${u.unit_id}`" class="unit-row">
         <div class="unit-icon">
           <UnitIcon :type="u.unit_type" />
           <span v-if="store.isInHangar(u.unit_id)" class="hangar-mark">★</span>
@@ -248,16 +224,9 @@ onMounted(() => {
         </div>
         <div class="unit-info">
           <div class="unit-name">{{ u.title }}</div>
-          <div class="unit-variant">
-            {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }}
-          </div>
+          <div class="unit-variant">{{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }}</div>
           <div class="unit-damage-bar">
-            <div
-              v-for="(pip, idx) in damagePips(u)"
-              :key="idx"
-              class="dmg-pip"
-              :class="pip"
-            ></div>
+            <div v-for="(pip, idx) in damagePips(u)" :key="idx" class="dmg-pip" :class="pip"></div>
           </div>
         </div>
         <div class="unit-stats">
@@ -287,7 +256,7 @@ onMounted(() => {
     </div>
 
     <!-- ПАГИНАЦИЯ -->
-    <div class="pagination" v-if="totalPages > 1">
+    <div v-if="totalPages > 1" class="pagination">
       <button :disabled="page <= 1" @click="prevPage">←</button>
       <span>{{ page }} / {{ totalPages }}</span>
       <button :disabled="page >= totalPages" @click="nextPage">→</button>
@@ -296,9 +265,7 @@ onMounted(() => {
     <!-- СТАТУС -->
     <div v-if="loading" class="status-msg">Загрузка…</div>
     <div v-if="error" class="status-msg error">{{ error }}</div>
-    <div v-if="!loading && units.length === 0" class="status-msg">
-      Ничего не найдено
-    </div>
+    <div v-if="!loading && units.length === 0" class="status-msg">Ничего не найдено</div>
   </div>
 </template>
 

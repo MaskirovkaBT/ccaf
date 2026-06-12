@@ -57,7 +57,7 @@ const searchFilters = ref({
   armor: '',
   struc: '',
   threshold: '',
-  mv: ''
+  mv: '',
 })
 const searchFilterModes = ref({
   specials: 'or',
@@ -71,7 +71,7 @@ const searchFilterModes = ref({
   armor: 'eq',
   struc: 'eq',
   threshold: 'eq',
-  mv: 'eq'
+  mv: 'eq',
 })
 const searchSortBy = ref('title')
 const searchSortOrder = ref('asc')
@@ -86,16 +86,26 @@ const activeSearchFilterCount = computed(() => {
   if (f.role) c++
   if (f.specials) c++
   const numericKeys = [
-    'pv', 'sz', 'short', 'medium', 'long', 'extreme', 'ov', 'armor', 'struc', 'threshold', 'mv'
+    'pv',
+    'sz',
+    'short',
+    'medium',
+    'long',
+    'extreme',
+    'ov',
+    'armor',
+    'struc',
+    'threshold',
+    'mv',
   ]
-  numericKeys.forEach((k) => {
+  numericKeys.forEach(k => {
     const v = f[k]
     if (v !== '' && v != null) c++
   })
   return c
 })
 
-watch(searchQuery, (q) => {
+watch(searchQuery, q => {
   searchFilters.value.title = q
 })
 
@@ -137,12 +147,8 @@ async function resolveCurrentUnits() {
 
 const selectedType = computed(() => getFormationType(localType.value))
 
-const groundTypes = computed(() =>
-  formationTypes.filter((f) => f.category === 'ground')
-)
-const airTypes = computed(() =>
-  formationTypes.filter((f) => f.category === 'air')
-)
+const groundTypes = computed(() => formationTypes.filter(f => f.category === 'ground'))
+const airTypes = computed(() => formationTypes.filter(f => f.category === 'air'))
 
 const unitCount = computed(() => resolvedUnits.value.length)
 const hasTooFewUnits = computed(() => unitCount.value > 0 && unitCount.value < 3)
@@ -150,7 +156,7 @@ const hasTooFewUnits = computed(() => unitCount.value > 0 && unitCount.value < 3
 const optimalRoleMatch = computed(() => {
   const role = selectedType.value?.optimalRole
   if (!role) return null
-  const count = resolvedUnits.value.filter((u) => translateRole(u.role) === role).length
+  const count = resolvedUnits.value.filter(u => translateRole(u.role) === role).length
   return { role, count }
 })
 
@@ -205,14 +211,17 @@ function removeUnit(idx) {
       delete localAbilities.value.unitAbilities[uid]
     }
   }
-  if (String(localAbilities.value.commanderUnitId) === uid && !localUnitIds.value.map(Number).includes(id)) {
+  if (
+    String(localAbilities.value.commanderUnitId) === uid &&
+    !localUnitIds.value.map(Number).includes(id)
+  ) {
     localAbilities.value.commanderUnitId = null
   }
 }
 
 function unitCountInFormation(unitId) {
   const target = Number(unitId)
-  return localUnitIds.value.filter((id) => Number(id) === target).length
+  return localUnitIds.value.filter(id => Number(id) === target).length
 }
 
 function onSearchInput() {
@@ -229,18 +238,28 @@ function buildSearchQuery() {
   const fm = searchFilterModes.value
 
   if (f.era_id != null) params.append('era_id', f.era_id)
-  f.faction_id.forEach((id) => params.append('faction_id', id))
+  f.faction_id.forEach(id => params.append('faction_id', id))
   if (f.unit_type) params.append('unit_type', f.unit_type)
   if (f.title) params.append('title', f.title)
   if (f.role) params.append('role', f.role)
   if (f.specials) params.append('specials', f.specials)
 
   const numericKeys = [
-    'pv', 'sz', 'short', 'medium', 'long', 'extreme', 'ov', 'armor', 'struc', 'threshold', 'mv'
+    'pv',
+    'sz',
+    'short',
+    'medium',
+    'long',
+    'extreme',
+    'ov',
+    'armor',
+    'struc',
+    'threshold',
+    'mv',
   ]
   const headers = {}
 
-  numericKeys.forEach((key) => {
+  numericKeys.forEach(key => {
     const val = f[key]
     if (val !== '' && val != null) {
       params.append(key, val)
@@ -267,7 +286,7 @@ function buildSearchQuery() {
 function parseSearchPageResponse(payload) {
   const items = Array.isArray(payload)
     ? payload
-    : (payload.items || payload.results || payload.data || payload.content || [])
+    : payload.items || payload.results || payload.data || payload.content || []
   const totalCount = payload.total ?? payload.count ?? payload.total_count ?? items.length
   const currentPage = payload.page ?? payload.page_number ?? 1
   const currentSize = payload.size ?? payload.page_size ?? payload.limit ?? searchSize.value
@@ -322,7 +341,7 @@ function onFilterReset() {
     armor: '',
     struc: '',
     threshold: '',
-    mv: ''
+    mv: '',
   }
   searchFilterModes.value = {
     specials: 'or',
@@ -336,7 +355,7 @@ function onFilterReset() {
     armor: 'eq',
     struc: 'eq',
     threshold: 'eq',
-    mv: 'eq'
+    mv: 'eq',
   }
   searchSortBy.value = 'title'
   searchSortOrder.value = 'asc'
@@ -362,9 +381,7 @@ function close() {
 
 function save() {
   const payload = {
-    name:
-      localName.value.trim() ||
-      (selectedType.value?.name ?? 'Новая формация'),
+    name: localName.value.trim() || (selectedType.value?.name ?? 'Новая формация'),
     type: localType.value,
     units: localUnitIds.value.map(Number),
     abilities: JSON.parse(JSON.stringify(localAbilities.value)),
@@ -445,7 +462,7 @@ function commandSelectedCount() {
 
 function nonCommandUnits() {
   const cmdId = Number(localAbilities.value.commanderUnitId)
-  return resolvedUnits.value.filter((u) => u.unit_id !== cmdId)
+  return resolvedUnits.value.filter(u => u.unit_id !== cmdId)
 }
 </script>
 
@@ -461,11 +478,7 @@ function nonCommandUnits() {
         <!-- Название -->
         <div class="field-row">
           <label>Название</label>
-          <input
-            v-model="localName"
-            placeholder="Название формации..."
-            class="field-input"
-          />
+          <input v-model="localName" placeholder="Название формации..." class="field-input" />
         </div>
 
         <!-- Тип -->
@@ -516,11 +529,7 @@ function nonCommandUnits() {
           <div v-if="abilityConfig.mode === 'single'" class="ability-row">
             <select v-model="localAbilities.choice" class="field-select">
               <option value="">— Не выбрано —</option>
-              <option
-                v-for="opt in abilityConfig.options"
-                :key="opt.id"
-                :value="opt.id"
-              >
+              <option v-for="opt in abilityConfig.options" :key="opt.id" :value="opt.id">
                 {{ opt.name }}
               </option>
             </select>
@@ -541,11 +550,11 @@ function nonCommandUnits() {
               <input
                 type="checkbox"
                 :checked="isAbilitySelected(opt.id)"
-                @change="toggleMultiAbility(opt.id)"
                 :disabled="
                   !isAbilitySelected(opt.id) &&
                   (localAbilities.choices || []).length >= abilityConfig.max
                 "
+                @change="toggleMultiAbility(opt.id)"
               />
               <span>{{ opt.name }}</span>
             </label>
@@ -593,11 +602,7 @@ function nonCommandUnits() {
               <label>Командир:</label>
               <select v-model="localAbilities.commanderUnitId" class="field-select">
                 <option :value="null">— Выберите командира —</option>
-                <option
-                  v-for="u in resolvedUnits"
-                  :key="u.unit_id"
-                  :value="u.unit_id"
-                >
+                <option v-for="u in resolvedUnits" :key="u.unit_id" :value="u.unit_id">
                   {{ u.title }}
                 </option>
               </select>
@@ -610,27 +615,18 @@ function nonCommandUnits() {
               Бонусные ОСП для остальных БЕ (макс.
               {{ abilityCountLimit }}):
             </div>
-            <div
-              v-for="u in nonCommandUnits()"
-              :key="u.unit_id"
-              class="unit-ability-row"
-            >
+            <div v-for="u in nonCommandUnits()" :key="u.unit_id" class="unit-ability-row">
               <span class="ua-name">{{ u.title }}</span>
               <select
                 :value="selectedUnitAbility(u.unit_id)"
-                @change="setUnitAbility(u.unit_id, $event.target.value)"
                 class="field-select"
                 :disabled="
-                  !selectedUnitAbility(u.unit_id) &&
-                  commandSelectedCount() >= abilityCountLimit
+                  !selectedUnitAbility(u.unit_id) && commandSelectedCount() >= abilityCountLimit
                 "
+                @change="setUnitAbility(u.unit_id, $event.target.value)"
               >
                 <option value="">— Не выбрано —</option>
-                <option
-                  v-for="opt in abilityConfig.unitOptions"
-                  :key="opt.id"
-                  :value="opt.id"
-                >
+                <option v-for="opt in abilityConfig.unitOptions" :key="opt.id" :value="opt.id">
                   {{ opt.name }}
                 </option>
               </select>
@@ -642,29 +638,21 @@ function nonCommandUnits() {
             <div v-if="abilityConfig.countMode" class="ability-hint">
               Выберите не более {{ abilityCountLimit }} БЕ
             </div>
-            <div
-              v-for="u in resolvedUnits"
-              :key="u.unit_id"
-              class="unit-ability-row"
-            >
+            <div v-for="u in resolvedUnits" :key="u.unit_id" class="unit-ability-row">
               <span class="ua-name">{{ u.title }}</span>
               <select
                 :value="selectedUnitAbility(u.unit_id)"
-                @change="setUnitAbility(u.unit_id, $event.target.value)"
                 class="field-select"
                 :disabled="
                   abilityConfig.countMode &&
                   !selectedUnitAbility(u.unit_id) &&
-                  Object.values(localAbilities.unitAbilities || {}).filter(Boolean)
-                    .length >= abilityCountLimit
+                  Object.values(localAbilities.unitAbilities || {}).filter(Boolean).length >=
+                    abilityCountLimit
                 "
+                @change="setUnitAbility(u.unit_id, $event.target.value)"
               >
                 <option value="">— Не выбрано —</option>
-                <option
-                  v-for="opt in abilityConfig.options"
-                  :key="opt.id"
-                  :value="opt.id"
-                >
+                <option v-for="opt in abilityConfig.options" :key="opt.id" :value="opt.id">
                   {{ opt.name }}
                 </option>
               </select>
@@ -711,9 +699,7 @@ function nonCommandUnits() {
                 {{ translateRole(u.role) }}
               </div>
             </div>
-            <button class="btn-remove-unit" @click.stop="removeUnit(idx)">
-              ×
-            </button>
+            <button class="btn-remove-unit" @click.stop="removeUnit(idx)">×</button>
           </div>
         </div>
 
@@ -742,17 +728,10 @@ function nonCommandUnits() {
             Ангар пуст. Добавьте юниты через каталог.
           </div>
           <div v-else class="unit-pick-list">
-            <div
-              v-for="u in hangarUnits"
-              :key="u.unit_id"
-              class="unit-pick-row"
-            >
+            <div v-for="u in hangarUnits" :key="u.unit_id" class="unit-pick-row">
               <div class="pick-icon">
                 <UnitIcon :type="u.unit_type" />
-                <span
-                  class="unit-weight-badge"
-                  :class="weightClassFromSz(u.sz)"
-                >
+                <span class="unit-weight-badge" :class="weightClassFromSz(u.sz)">
                   {{ szLabel(u.sz) }}
                 </span>
               </div>
@@ -778,31 +757,29 @@ function nonCommandUnits() {
           <div class="search-toolbar">
             <input
               v-model="searchQuery"
-              @input="onSearchInput"
               placeholder="Поиск по названию..."
               class="field-input"
+              @input="onSearchInput"
             />
             <button class="btn-filter" @click="showFilterModal = true">
               Фильтры
-              <span v-if="activeSearchFilterCount" class="filter-badge">{{ activeSearchFilterCount }}</span>
+              <span v-if="activeSearchFilterCount" class="filter-badge">{{
+                activeSearchFilterCount
+              }}</span>
             </button>
           </div>
           <div v-if="searchLoading" class="empty-hangar">Поиск…</div>
-          <div v-else-if="searchResults.length === 0 && (searchQuery || activeSearchFilterCount)" class="empty-hangar">
+          <div
+            v-else-if="searchResults.length === 0 && (searchQuery || activeSearchFilterCount)"
+            class="empty-hangar"
+          >
             Ничего не найдено
           </div>
           <div v-else class="unit-pick-list">
-            <div
-              v-for="u in searchResults"
-              :key="u.unit_id"
-              class="unit-pick-row"
-            >
+            <div v-for="u in searchResults" :key="u.unit_id" class="unit-pick-row">
               <div class="pick-icon">
                 <UnitIcon :type="u.unit_type" />
-                <span
-                  class="unit-weight-badge"
-                  :class="weightClassFromSz(u.sz)"
-                >
+                <span class="unit-weight-badge" :class="weightClassFromSz(u.sz)">
                   {{ szLabel(u.sz) }}
                 </span>
               </div>
@@ -822,9 +799,13 @@ function nonCommandUnits() {
             </div>
           </div>
           <div v-if="searchPages > 1" class="pagination">
-            <button class="page-btn" :disabled="!canPrevPage" @click="goSearchPage(searchPage - 1)">‹</button>
+            <button class="page-btn" :disabled="!canPrevPage" @click="goSearchPage(searchPage - 1)">
+              ‹
+            </button>
             <span class="page-info">{{ searchPage }} / {{ searchPages }}</span>
-            <button class="page-btn" :disabled="!canNextPage" @click="goSearchPage(searchPage + 1)">›</button>
+            <button class="page-btn" :disabled="!canNextPage" @click="goSearchPage(searchPage + 1)">
+              ›
+            </button>
           </div>
         </div>
 
@@ -845,9 +826,7 @@ function nonCommandUnits() {
       <div class="modal-footer">
         <button v-if="!isNew" class="btn-remove" @click="remove">УДАЛИТЬ</button>
         <button class="btn-reset" @click="close">ОТМЕНА</button>
-        <button class="btn-apply" @click="save" :disabled="!localType">
-          СОХРАНИТЬ
-        </button>
+        <button class="btn-apply" :disabled="!localType" @click="save">СОХРАНИТЬ</button>
       </div>
     </div>
   </div>
@@ -869,11 +848,7 @@ function nonCommandUnits() {
   width: 100%;
   max-width: 480px;
   max-height: 92vh;
-  background: linear-gradient(
-    180deg,
-    var(--bg-secondary) 0%,
-    var(--bg-primary) 100%
-  );
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;

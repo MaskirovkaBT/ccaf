@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useCatalogStore } from '../stores/catalog.js'
@@ -19,7 +19,7 @@ const expandedRosters = ref(new Set())
 onMounted(() => {
   // expand rosters by default if few
   if (activeGame.value.rosters.length <= 2) {
-    activeGame.value.rosters.forEach((r) => expandedRosters.value.add(r.formationId))
+    activeGame.value.rosters.forEach(r => expandedRosters.value.add(r.formationId))
   }
 })
 
@@ -66,8 +66,8 @@ function damageStruc(fid, instanceId, delta) {
 }
 
 function changeHeat(fid, instanceId, delta) {
-  const roster = activeGame.value.rosters.find((r) => r.formationId === fid)
-  const unit = roster?.units.find((u) => u.instanceId === instanceId)
+  const roster = activeGame.value.rosters.find(r => r.formationId === fid)
+  const unit = roster?.units.find(u => u.instanceId === instanceId)
   if (unit) game.setHeat(fid, instanceId, unit.heat + delta)
 }
 
@@ -80,7 +80,7 @@ function openMech(unitId) {
 }
 
 function aliveCount(units) {
-  return units.filter((u) => !u.destroyed).length
+  return units.filter(u => !u.destroyed).length
 }
 
 function damageChanged(unit) {
@@ -130,8 +130,8 @@ function rollRandomCrit(fid, instanceId) {
 }
 
 function unitById(fid, instanceId) {
-  const roster = activeGame.value.rosters.find((r) => r.formationId === fid)
-  return roster?.units.find((u) => u.instanceId === instanceId)
+  const roster = activeGame.value.rosters.find(r => r.formationId === fid)
+  return roster?.units.find(u => u.instanceId === instanceId)
 }
 
 function removeCrit(fid, instanceId, critId) {
@@ -151,9 +151,15 @@ function barColor(current, max) {
     <div class="game-header">
       <div class="game-title">ТЕКУЩАЯ ПАРТИЯ</div>
       <div class="game-stats">
-        <span>Ход: <strong>{{ activeGame.turn }}</strong></span>
-        <span>PV: <strong>{{ totalPv }}</strong></span>
-        <span>Ростеров: <strong>{{ activeGame.rosters.length }}</strong></span>
+        <span
+          >Ход: <strong>{{ activeGame.turn }}</strong></span
+        >
+        <span
+          >PV: <strong>{{ totalPv }}</strong></span
+        >
+        <span
+          >Ростеров: <strong>{{ activeGame.rosters.length }}</strong></span
+        >
       </div>
       <div class="game-actions">
         <button class="btn-turn" @click="nextTurn">Следующий ход</button>
@@ -170,7 +176,7 @@ function barColor(current, max) {
         v-for="roster in activeGame.rosters"
         :key="roster.formationId"
         class="roster-card"
-        :class="{ destroyed: roster.units.every((u) => u.destroyed) }"
+        :class="{ destroyed: roster.units.every(u => u.destroyed) }"
       >
         <div class="roster-header" @click="toggleRoster(roster.formationId)">
           <div class="roster-name">
@@ -179,9 +185,13 @@ function barColor(current, max) {
           </div>
           <div class="roster-meta">
             <span class="roster-pv">{{ rosterPv(roster.units) }} PV</span>
-            <span class="roster-count">{{ aliveCount(roster.units) }}/{{ roster.units.length }} БЕ</span>
+            <span class="roster-count"
+              >{{ aliveCount(roster.units) }}/{{ roster.units.length }} БЕ</span
+            >
           </div>
-          <button class="btn-remove-roster" @click.stop="removeRoster(roster.formationId)">×</button>
+          <button class="btn-remove-roster" @click.stop="removeRoster(roster.formationId)">
+            ×
+          </button>
         </div>
 
         <div v-if="isExpanded(roster.formationId)" class="roster-body">
@@ -197,16 +207,25 @@ function barColor(current, max) {
               </div>
               <div class="unit-info">
                 <div class="unit-title" :class="{ destroyed: unit.destroyed }">
-                  <span class="unit-title-text" @click="openMech(unit.unitId)">{{ unit.title }}</span>
+                  <span class="unit-title-text" @click="openMech(unit.unitId)">{{
+                    unit.title
+                  }}</span>
                   <span v-if="unit.destroyed" class="destroyed-badge">УНИЧТОЖЕН</span>
                   <span v-else-if="unit.stunned" class="stunned-badge">ОГЛУШЁН</span>
                 </div>
                 <div class="unit-sub">
-                  {{ unit.unitType }} · РЗ {{ unit.sz }} · ДВ {{ unit.currentMv }} · TMM {{ unit.currentTmm }}
-                  <span v-if="unit.baseMv !== unit.currentMv" class="changed-stat">(было {{ unit.baseMv }})</span>
+                  {{ unit.unitType }} · РЗ {{ unit.sz }} · ДВ {{ unit.currentMv }} · TMM
+                  {{ unit.currentTmm }}
+                  <span v-if="unit.baseMv !== unit.currentMv" class="changed-stat"
+                    >(было {{ unit.baseMv }})</span
+                  >
                   <span v-if="unit.toHitMod" class="mod-badge">Попадание +{{ unit.toHitMod }}</span>
-                  <span v-if="unit.toHitModMelee" class="mod-badge">Ближний бой +{{ unit.toHitModMelee }}</span>
-                  <span v-if="unit.heatPerShot" class="mod-badge">+{{ unit.heatPerShot }} нагрев</span>
+                  <span v-if="unit.toHitModMelee" class="mod-badge"
+                    >Ближний бой +{{ unit.toHitModMelee }}</span
+                  >
+                  <span v-if="unit.heatPerShot" class="mod-badge"
+                    >+{{ unit.heatPerShot }} нагрев</span
+                  >
                 </div>
               </div>
             </div>
@@ -219,8 +238,8 @@ function barColor(current, max) {
                   <div
                     class="bar-fill armor"
                     :style="{
-                      width: (unit.maxArmor ? (unit.currentArmor / unit.maxArmor * 100) : 0) + '%',
-                      background: barColor(unit.currentArmor, unit.maxArmor)
+                      width: (unit.maxArmor ? (unit.currentArmor / unit.maxArmor) * 100 : 0) + '%',
+                      background: barColor(unit.currentArmor, unit.maxArmor),
                     }"
                   ></div>
                 </div>
@@ -236,8 +255,8 @@ function barColor(current, max) {
                   <div
                     class="bar-fill struc"
                     :style="{
-                      width: (unit.maxStruc ? (unit.currentStruc / unit.maxStruc * 100) : 0) + '%',
-                      background: barColor(unit.currentStruc, unit.maxStruc)
+                      width: (unit.maxStruc ? (unit.currentStruc / unit.maxStruc) * 100 : 0) + '%',
+                      background: barColor(unit.currentStruc, unit.maxStruc),
                     }"
                   ></div>
                 </div>
@@ -252,17 +271,31 @@ function barColor(current, max) {
             <!-- Heat -->
             <div class="heat-row">
               <span class="heat-label">Нагрев</span>
-              <button class="heat-btn" @click="changeHeat(roster.formationId, unit.instanceId, -1)">−</button>
+              <button class="heat-btn" @click="changeHeat(roster.formationId, unit.instanceId, -1)">
+                −
+              </button>
               <span class="heat-value" :class="{ hot: unit.heat > 0 }">{{ unit.heat }}</span>
-              <button class="heat-btn" @click="changeHeat(roster.formationId, unit.instanceId, 1)">+</button>
+              <button class="heat-btn" @click="changeHeat(roster.formationId, unit.instanceId, 1)">
+                +
+              </button>
             </div>
 
             <!-- Damage summary -->
-            <div v-if="!unit.destroyed && activeGame.turn > 1 && damageChanged(unit)" class="damage-summary">
+            <div
+              v-if="!unit.destroyed && activeGame.turn > 1 && damageChanged(unit)"
+              class="damage-summary"
+            >
               <span>
-                Урон: {{ unit.currentShort }}/{{ unit.currentMedium }}/{{ unit.currentLong }}/{{ unit.currentExtreme }}
-                <span class="changed-stat" v-if="unit.baseShort || unit.baseMedium || unit.baseLong">
-                  (было {{ unit.baseShort }}/{{ unit.baseMedium }}/{{ unit.baseLong }}/{{ unit.baseExtreme }})
+                Урон: {{ unit.currentShort }}/{{ unit.currentMedium }}/{{ unit.currentLong }}/{{
+                  unit.currentExtreme
+                }}
+                <span
+                  v-if="unit.baseShort || unit.baseMedium || unit.baseLong"
+                  class="changed-stat"
+                >
+                  (было {{ unit.baseShort }}/{{ unit.baseMedium }}/{{ unit.baseLong }}/{{
+                    unit.baseExtreme
+                  }})
                 </span>
               </span>
             </div>
@@ -270,38 +303,57 @@ function barColor(current, max) {
             <!-- Crits -->
             <div v-if="!unit.destroyed" class="crit-section">
               <div class="crit-add">
-                <select v-model="critRolls[getCritKey(roster.formationId, unit.instanceId)]" class="crit-select">
-                  <option v-for="(c, roll) in getAvailableCrits(unit)" :key="roll" :value="Number(roll)">
+                <select
+                  v-model="critRolls[getCritKey(roster.formationId, unit.instanceId)]"
+                  class="crit-select"
+                >
+                  <option
+                    v-for="(c, roll) in getAvailableCrits(unit)"
+                    :key="roll"
+                    :value="Number(roll)"
+                  >
                     {{ roll }} — {{ c.name }}
                   </option>
                 </select>
-                <button class="btn-crit-add" @click="applySelectedCrit(roster.formationId, unit.instanceId)">Добавить</button>
-                <button class="btn-crit-rand" @click="rollRandomCrit(roster.formationId, unit.instanceId)" title="Случайный бросок">🎲</button>
+                <button
+                  class="btn-crit-add"
+                  @click="applySelectedCrit(roster.formationId, unit.instanceId)"
+                >
+                  Добавить
+                </button>
+                <button
+                  class="btn-crit-rand"
+                  title="Случайный бросок"
+                  @click="rollRandomCrit(roster.formationId, unit.instanceId)"
+                >
+                  🎲
+                </button>
               </div>
 
               <!-- Pending crits -->
               <div v-if="unit.pendingCrits.length" class="crit-list pending">
-                <div
-                  v-for="c in unit.pendingCrits"
-                  :key="c.id"
-                  class="crit-tag pending"
-                >
+                <div v-for="c in unit.pendingCrits" :key="c.id" class="crit-tag pending">
                   <span>{{ c.roll }} — {{ c.name }} (след. ход)</span>
-                  <button class="crit-remove" @click="removeCrit(roster.formationId, unit.instanceId, c.id)">×</button>
+                  <button
+                    class="crit-remove"
+                    @click="removeCrit(roster.formationId, unit.instanceId, c.id)"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
 
               <!-- Active crits -->
               <div v-if="unit.crits.length" class="crit-list active">
-                <div
-                  v-for="c in unit.crits"
-                  :key="c.id"
-                  class="crit-tag"
-                  :class="c.type"
-                >
+                <div v-for="c in unit.crits" :key="c.id" class="crit-tag" :class="c.type">
                   <span>{{ c.roll }} — {{ c.name }}</span>
                   <span v-if="c.desc" class="crit-desc">{{ c.desc }}</span>
-                  <button class="crit-remove" @click="removeCrit(roster.formationId, unit.instanceId, c.id)">×</button>
+                  <button
+                    class="crit-remove"
+                    @click="removeCrit(roster.formationId, unit.instanceId, c.id)"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
             </div>
@@ -322,12 +374,7 @@ function barColor(current, max) {
         <div class="modal-body">
           <div v-if="formations.length === 0" class="empty-state">Нет сохранённых формаций.</div>
           <div v-else class="formation-list">
-            <div
-              v-for="f in formations"
-              :key="f.id"
-              class="formation-row"
-              @click="addRoster(f)"
-            >
+            <div v-for="f in formations" :key="f.id" class="formation-row" @click="addRoster(f)">
               <div class="formation-name">{{ f.name }}</div>
               <div class="formation-meta">{{ f.type }} · {{ f.units?.length || 0 }} БЕ</div>
             </div>
@@ -348,7 +395,7 @@ function barColor(current, max) {
 }
 
 .game-header {
-  background: linear-gradient(180deg, rgba(0,255,65,0.06) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(180deg, rgba(0, 255, 65, 0.06) 0%, rgba(0, 0, 0, 0) 100%);
   border: 1px solid var(--border-color);
   padding: 10px 12px;
   display: flex;
@@ -881,8 +928,14 @@ function barColor(current, max) {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header {

@@ -8,7 +8,9 @@ function loadGame() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return JSON.parse(raw)
-  } catch {}
+  } catch {
+    // ignore parse error
+  }
   return null
 }
 
@@ -69,7 +71,7 @@ export function createGameUnit(unit) {
 
     crits: [],
     pendingCrits: [],
-    destroyed: false
+    destroyed: false,
   }
 }
 
@@ -88,14 +90,10 @@ export function recalcUnit(u) {
 
   // Immediate destruction/ammo logic when active
   const activeOrImmediate = allCrits.filter(
-    (c) =>
-      c.active ||
-      c.type === 'destroyed' ||
-      c.type === 'crewKilled' ||
-      c.type === 'fuel'
+    c => c.active || c.type === 'destroyed' || c.type === 'crewKilled' || c.type === 'fuel'
   )
 
-  const ammoCrit = activeOrImmediate.find((c) => c.type === 'ammo')
+  const ammoCrit = activeOrImmediate.find(c => c.type === 'ammo')
   if (ammoCrit && ammoCrit.active) {
     const specs = (u.specials || '').toUpperCase()
     const hasCase = specs.includes('CASE')
@@ -106,7 +104,7 @@ export function recalcUnit(u) {
     }
   }
 
-  allCrits.forEach((c) => {
+  allCrits.forEach(c => {
     if (!c.active && c.type !== 'destroyed' && c.type !== 'crewKilled' && c.type !== 'fuel') return
 
     switch (c.type) {
@@ -218,10 +216,10 @@ export const useGameStore = defineStore('game', () => {
 
   function nextTurn() {
     activeGame.value.turn++
-    activeGame.value.rosters.forEach((roster) => {
-      roster.units.forEach((u) => {
+    activeGame.value.rosters.forEach(roster => {
+      roster.units.forEach(u => {
         // Activate pending crits
-        u.pendingCrits.forEach((c) => {
+        u.pendingCrits.forEach(c => {
           c.pending = false
           c.active = true
           c.appliedAtTurn = activeGame.value.turn
@@ -233,7 +231,7 @@ export const useGameStore = defineStore('game', () => {
         u.pendingCrits = []
 
         // Remove expired temporary crits
-        u.crits = u.crits.filter((c) => {
+        u.crits = u.crits.filter(c => {
           if (c.expiresTurn && c.expiresTurn <= activeGame.value.turn) {
             return false
           }
@@ -251,19 +249,19 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function addRoster(formation, resolvedUnits) {
-    const units = (resolvedUnits || []).map((u) => createGameUnit(u))
-    units.forEach((u) => recalcUnit(u))
+    const units = (resolvedUnits || []).map(u => createGameUnit(u))
+    units.forEach(u => recalcUnit(u))
     activeGame.value.rosters.push({
       formationId: formation.id,
       name: formation.name || 'Без названия',
       type: formation.type || '',
-      units
+      units,
     })
     persist()
   }
 
   function removeRoster(formationId) {
-    const idx = activeGame.value.rosters.findIndex((r) => r.formationId === formationId)
+    const idx = activeGame.value.rosters.findIndex(r => r.formationId === formationId)
     if (idx !== -1) {
       activeGame.value.rosters.splice(idx, 1)
       persist()
@@ -271,8 +269,8 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function applyArmorDamage(formationId, instanceId, delta) {
-    const roster = activeGame.value.rosters.find((r) => r.formationId === formationId)
-    const unit = roster?.units.find((u) => u.instanceId === instanceId)
+    const roster = activeGame.value.rosters.find(r => r.formationId === formationId)
+    const unit = roster?.units.find(u => u.instanceId === instanceId)
     if (!unit || unit.destroyed) return
     unit.currentArmor = Math.max(0, Math.min(unit.maxArmor, unit.currentArmor + delta))
     if (unit.currentStruc <= 0) unit.destroyed = true
@@ -280,8 +278,8 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function applyStrucDamage(formationId, instanceId, delta) {
-    const roster = activeGame.value.rosters.find((r) => r.formationId === formationId)
-    const unit = roster?.units.find((u) => u.instanceId === instanceId)
+    const roster = activeGame.value.rosters.find(r => r.formationId === formationId)
+    const unit = roster?.units.find(u => u.instanceId === instanceId)
     if (!unit || unit.destroyed) return
     unit.currentStruc = Math.max(0, Math.min(unit.maxStruc, unit.currentStruc + delta))
     if (unit.currentStruc <= 0) unit.destroyed = true
@@ -289,8 +287,8 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function setHeat(formationId, instanceId, heat) {
-    const roster = activeGame.value.rosters.find((r) => r.formationId === formationId)
-    const unit = roster?.units.find((u) => u.instanceId === instanceId)
+    const roster = activeGame.value.rosters.find(r => r.formationId === formationId)
+    const unit = roster?.units.find(u => u.instanceId === instanceId)
     if (!unit) return
     unit.heat = Math.max(0, heat)
     recalcUnit(unit)
@@ -298,8 +296,8 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function addCrit(formationId, instanceId, critData) {
-    const roster = activeGame.value.rosters.find((r) => r.formationId === formationId)
-    const unit = roster?.units.find((u) => u.instanceId === instanceId)
+    const roster = activeGame.value.rosters.find(r => r.formationId === formationId)
+    const unit = roster?.units.find(u => u.instanceId === instanceId)
     if (!unit || unit.destroyed) return
 
     const crit = {
@@ -311,7 +309,7 @@ export const useGameStore = defineStore('game', () => {
       pending: true,
       active: false,
       appliedAtTurn: null,
-      expiresTurn: null
+      expiresTurn: null,
     }
 
     if (crit.type === 'crewStunned' || crit.type === 'gunnersStunned') {
@@ -335,11 +333,11 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function removeCrit(formationId, instanceId, critId) {
-    const roster = activeGame.value.rosters.find((r) => r.formationId === formationId)
-    const unit = roster?.units.find((u) => u.instanceId === instanceId)
+    const roster = activeGame.value.rosters.find(r => r.formationId === formationId)
+    const unit = roster?.units.find(u => u.instanceId === instanceId)
     if (!unit) return
-    unit.crits = unit.crits.filter((c) => c.id !== critId)
-    unit.pendingCrits = unit.pendingCrits.filter((c) => c.id !== critId)
+    unit.crits = unit.crits.filter(c => c.id !== critId)
+    unit.pendingCrits = unit.pendingCrits.filter(c => c.id !== critId)
     recalcUnit(unit)
     persist()
   }
@@ -356,6 +354,6 @@ export const useGameStore = defineStore('game', () => {
     applyStrucDamage,
     setHeat,
     addCrit,
-    removeCrit
+    removeCrit,
   }
 })

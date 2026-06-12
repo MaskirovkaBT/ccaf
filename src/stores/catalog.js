@@ -5,7 +5,11 @@ export function getApiBase() {
   if (import.meta.env.DEV) {
     return '/api'
   }
-  return localStorage.getItem('ccaf_api_url') || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+  return (
+    localStorage.getItem('ccaf_api_url') ||
+    import.meta.env.VITE_API_BASE_URL ||
+    'http://localhost:8000'
+  )
 }
 
 export const useCatalogStore = defineStore('catalog', () => {
@@ -42,7 +46,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     armor: '',
     struc: '',
     threshold: '',
-    mv: ''
+    mv: '',
   })
 
   const filterModes = ref({
@@ -57,7 +61,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     armor: 'eq',
     struc: 'eq',
     threshold: 'eq',
-    mv: 'eq'
+    mv: 'eq',
   })
 
   // ---------- сортировка ----------
@@ -107,7 +111,7 @@ export const useCatalogStore = defineStore('catalog', () => {
       return
     }
     const results = await Promise.all(
-      ids.map(async (id) => {
+      ids.map(async id => {
         try {
           return await apiGet(`/units/${id}`)
         } catch (err) {
@@ -123,10 +127,10 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   async function resolveUnits(unitIds) {
     const ids = (unitIds || []).map(Number)
-    const missing = ids.filter((id) => !formationUnitCache.value.has(id))
+    const missing = ids.filter(id => !formationUnitCache.value.has(id))
     if (missing.length) {
       const results = await Promise.all(
-        missing.map(async (id) => {
+        missing.map(async id => {
           try {
             return await apiGet(`/units/${id}`)
           } catch (err) {
@@ -135,11 +139,11 @@ export const useCatalogStore = defineStore('catalog', () => {
           }
         })
       )
-      results.forEach((u) => {
+      results.forEach(u => {
         if (u) formationUnitCache.value.set(u.unit_id, u)
       })
     }
-    return ids.map((id) => formationUnitCache.value.get(id)).filter(Boolean)
+    return ids.map(id => formationUnitCache.value.get(id)).filter(Boolean)
   }
 
   loadHangar()
@@ -164,13 +168,13 @@ export const useCatalogStore = defineStore('catalog', () => {
     formations.value.push({
       id: Date.now(),
       ...formation,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     })
     saveFormations()
   }
 
   function updateFormation(id, data) {
-    const idx = formations.value.findIndex((f) => f.id === id)
+    const idx = formations.value.findIndex(f => f.id === id)
     if (idx !== -1) {
       formations.value[idx] = { ...formations.value[idx], ...data }
       saveFormations()
@@ -178,7 +182,7 @@ export const useCatalogStore = defineStore('catalog', () => {
   }
 
   function removeFormation(id) {
-    const idx = formations.value.findIndex((f) => f.id === id)
+    const idx = formations.value.findIndex(f => f.id === id)
     if (idx !== -1) {
       formations.value.splice(idx, 1)
       saveFormations()
@@ -201,7 +205,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     // но на всякий случай поддерживаем несколько вариантов
     const items = Array.isArray(payload)
       ? payload
-      : (payload.items || payload.results || payload.data || payload.content || [])
+      : payload.items || payload.results || payload.data || payload.content || []
     const totalCount = payload.total ?? payload.count ?? payload.total_count ?? items.length
     const currentPage = payload.page ?? payload.page_number ?? page.value
     const currentSize = payload.size ?? payload.page_size ?? payload.limit ?? size.value
@@ -220,7 +224,19 @@ export const useCatalogStore = defineStore('catalog', () => {
     if (filters.value.role) params.append('role', filters.value.role)
     if (filters.value.specials) params.append('specials', filters.value.specials)
 
-    const numericKeys = ['pv', 'sz', 'short', 'medium', 'long', 'extreme', 'ov', 'armor', 'struc', 'threshold', 'mv']
+    const numericKeys = [
+      'pv',
+      'sz',
+      'short',
+      'medium',
+      'long',
+      'extreme',
+      'ov',
+      'armor',
+      'struc',
+      'threshold',
+      'mv',
+    ]
     const headers = {}
 
     numericKeys.forEach(key => {
@@ -347,7 +363,7 @@ export const useCatalogStore = defineStore('catalog', () => {
       armor: '',
       struc: '',
       threshold: '',
-      mv: ''
+      mv: '',
     }
     filterModes.value = {
       specials: 'or',
@@ -361,7 +377,7 @@ export const useCatalogStore = defineStore('catalog', () => {
       armor: 'eq',
       struc: 'eq',
       threshold: 'eq',
-      mv: 'eq'
+      mv: 'eq',
     }
     page.value = 1
   }
@@ -404,6 +420,6 @@ export const useCatalogStore = defineStore('catalog', () => {
     isInHangar,
     addFormation,
     updateFormation,
-    removeFormation
+    removeFormation,
   }
 })

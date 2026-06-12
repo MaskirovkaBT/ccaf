@@ -1,19 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "../stores/catalog.js";
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useCatalogStore } from '../stores/catalog.js'
 
-const store = useCatalogStore();
-const {
-  eras,
-  factions,
-  roles,
-  types,
-  filters,
-  filterModes,
-  sortBy,
-  sortOrder,
-} = storeToRefs(store);
+const store = useCatalogStore()
+const { eras, factions, roles, types, filters, filterModes, sortBy, sortOrder } = storeToRefs(store)
 
 const props = defineProps({
   mode: { type: String, default: 'store' },
@@ -23,9 +14,9 @@ const props = defineProps({
   initialSortOrder: { type: String, default: null },
 })
 
-const emit = defineEmits(["close", "apply", "reset"]);
+const emit = defineEmits(['close', 'apply', 'reset'])
 
-const factionOpen = ref(false);
+const factionOpen = ref(false)
 
 // Локальные копии — изменения в модале не трогают store до нажатия "Применить"
 const localFilters = ref({})
@@ -48,40 +39,55 @@ function initLocals() {
 }
 initLocals()
 watch(
-  () => [props.initialFilters, props.initialFilterModes, props.initialSortBy, props.initialSortOrder],
+  () => [
+    props.initialFilters,
+    props.initialFilterModes,
+    props.initialSortBy,
+    props.initialSortOrder,
+  ],
   initLocals,
   { deep: true }
 )
 
 onMounted(() => {
-  document.addEventListener("keydown", onKeydown);
-});
+  document.addEventListener('keydown', onKeydown)
+})
 
 onUnmounted(() => {
-  document.removeEventListener("keydown", onKeydown);
-});
+  document.removeEventListener('keydown', onKeydown)
+})
 
 const activeCount = computed(() => {
-  let c = 0;
-  const f = localFilters.value;
-  if (f.era_id != null) c++;
-  if (f.faction_id && f.faction_id.length > 0) c++;
-  if (f.unit_type) c++;
-  if (f.title) c++;
-  if (f.role) c++;
-  if (f.specials) c++;
+  let c = 0
+  const f = localFilters.value
+  if (f.era_id != null) c++
+  if (f.faction_id && f.faction_id.length > 0) c++
+  if (f.unit_type) c++
+  if (f.title) c++
+  if (f.role) c++
+  if (f.specials) c++
   const numericKeys = [
-    "pv", "sz", "short", "medium", "long", "extreme", "ov", "armor", "struc", "threshold", "mv",
-  ];
-  numericKeys.forEach((k) => {
-    const v = f[k];
-    if (v !== "" && v != null) c++;
-  });
-  return c;
-});
+    'pv',
+    'sz',
+    'short',
+    'medium',
+    'long',
+    'extreme',
+    'ov',
+    'armor',
+    'struc',
+    'threshold',
+    'mv',
+  ]
+  numericKeys.forEach(k => {
+    const v = f[k]
+    if (v !== '' && v != null) c++
+  })
+  return c
+})
 
 function close() {
-  emit("close");
+  emit('close')
 }
 
 function apply() {
@@ -93,13 +99,13 @@ function apply() {
       sortOrder: localSortOrder.value,
     })
   } else {
-    filters.value = JSON.parse(JSON.stringify(localFilters.value));
-    filterModes.value = JSON.parse(JSON.stringify(localFilterModes.value));
-    sortBy.value = localSortBy.value;
-    sortOrder.value = localSortOrder.value;
-    store.setPage(1);
-    store.loadUnits();
-    close();
+    filters.value = JSON.parse(JSON.stringify(localFilters.value))
+    filterModes.value = JSON.parse(JSON.stringify(localFilterModes.value))
+    sortBy.value = localSortBy.value
+    sortOrder.value = localSortOrder.value
+    store.setPage(1)
+    store.loadUnits()
+    close()
   }
 }
 
@@ -107,62 +113,62 @@ function reset() {
   if (props.mode === 'local') {
     emit('reset')
   } else {
-    store.resetFilters();
-    store.loadUnits();
-    close();
+    store.resetFilters()
+    store.loadUnits()
+    close()
   }
 }
 
 function toggleFaction(id) {
-  const arr = localFilters.value.faction_id;
-  const idx = arr.indexOf(id);
+  const arr = localFilters.value.faction_id
+  const idx = arr.indexOf(id)
   if (idx === -1) {
-    arr.push(id);
+    arr.push(id)
   } else {
-    arr.splice(idx, 1);
+    arr.splice(idx, 1)
   }
 }
 
 function onKeydown(e) {
-  if (e.key === "Escape") close();
+  if (e.key === 'Escape') close()
 }
 
 const numericFields = [
-  { key: "pv", label: "Очки" },
-  { key: "sz", label: "Размер" },
-  { key: "short", label: "Урон ближний" },
-  { key: "medium", label: "Урон средний" },
-  { key: "long", label: "Урон дальний" },
-  { key: "extreme", label: "Урон экстремальный" },
-  { key: "ov", label: "Перегрев" },
-  { key: "armor", label: "Броня" },
-  { key: "struc", label: "Структура" },
-  { key: "threshold", label: "Порог повреждений" },
-  { key: "mv", label: "Движение" },
-];
+  { key: 'pv', label: 'Очки' },
+  { key: 'sz', label: 'Размер' },
+  { key: 'short', label: 'Урон ближний' },
+  { key: 'medium', label: 'Урон средний' },
+  { key: 'long', label: 'Урон дальний' },
+  { key: 'extreme', label: 'Урон экстремальный' },
+  { key: 'ov', label: 'Перегрев' },
+  { key: 'armor', label: 'Броня' },
+  { key: 'struc', label: 'Структура' },
+  { key: 'threshold', label: 'Порог повреждений' },
+  { key: 'mv', label: 'Движение' },
+]
 
 const modeOptions = [
-  { value: "eq", label: "=" },
-  { value: "gt", label: ">" },
-  { value: "gte", label: "≥" },
-  { value: "lt", label: "<" },
-  { value: "lte", label: "≤" },
-];
+  { value: 'eq', label: '=' },
+  { value: 'gt', label: '>' },
+  { value: 'gte', label: '≥' },
+  { value: 'lt', label: '<' },
+  { value: 'lte', label: '≤' },
+]
 
 const sortOptions = [
-  { value: "title", label: "Название" },
-  { value: "pv", label: "Очки" },
-  { value: "role", label: "Роль" },
-  { value: "short", label: "Урон ближний" },
-  { value: "medium", label: "Урон средний" },
-  { value: "long", label: "Урон дальний" },
-  { value: "armor", label: "Броня" },
-  { value: "struc", label: "Структура" },
-  { value: "mv", label: "Скорость" },
-];
+  { value: 'title', label: 'Название' },
+  { value: 'pv', label: 'Очки' },
+  { value: 'role', label: 'Роль' },
+  { value: 'short', label: 'Урон ближний' },
+  { value: 'medium', label: 'Урон средний' },
+  { value: 'long', label: 'Урон дальний' },
+  { value: 'armor', label: 'Броня' },
+  { value: 'struc', label: 'Структура' },
+  { value: 'mv', label: 'Скорость' },
+]
 
 function toggleSortOrder() {
-  localSortOrder.value = localSortOrder.value === "asc" ? "desc" : "asc";
+  localSortOrder.value = localSortOrder.value === 'asc' ? 'desc' : 'asc'
 }
 </script>
 
@@ -187,7 +193,7 @@ function toggleSortOrder() {
             </option>
           </select>
           <button class="sort-dir-btn" @click="toggleSortOrder">
-            {{ localSortOrder === "asc" ? "▲" : "▼" }}
+            {{ localSortOrder === 'asc' ? '▲' : '▼' }}
           </button>
         </div>
 
@@ -217,17 +223,13 @@ function toggleSortOrder() {
                 {{
                   localFilters.faction_id.length > 0
                     ? `Выбрано: ${localFilters.faction_id.length}`
-                    : "Все фракции"
+                    : 'Все фракции'
                 }}
               </span>
-              <span class="chevron">{{ factionOpen ? "▲" : "▼" }}</span>
+              <span class="chevron">{{ factionOpen ? '▲' : '▼' }}</span>
             </div>
             <div class="multi-select-options" @click.stop>
-              <label
-                v-for="f in factions"
-                :key="f.faction_id"
-                class="multi-option"
-              >
+              <label v-for="f in factions" :key="f.faction_id" class="multi-option">
                 <input
                   type="checkbox"
                   :checked="localFilters.faction_id.includes(f.faction_id)"
@@ -243,11 +245,7 @@ function toggleSortOrder() {
         <div class="section-title">Поиск</div>
         <div class="field-row">
           <label>Название</label>
-          <input
-            v-model="localFilters.title"
-            placeholder="Название юнита..."
-            class="field-input"
-          />
+          <input v-model="localFilters.title" placeholder="Название юнита..." class="field-input" />
         </div>
         <div class="field-row">
           <label>Роль</label>
@@ -271,11 +269,7 @@ function toggleSortOrder() {
                 class="num-input"
               />
               <select v-model="localFilterModes[f.key]" class="num-mode">
-                <option
-                  v-for="m in modeOptions"
-                  :key="m.value"
-                  :value="m.value"
-                >
+                <option v-for="m in modeOptions" :key="m.value" :value="m.value">
                   {{ m.label }}
                 </option>
               </select>
@@ -296,26 +290,12 @@ function toggleSortOrder() {
         <div class="field-row">
           <label>Режим</label>
           <div class="radio-group">
-            <label
-              class="radio-option"
-              :class="{ active: localFilterModes.specials === 'or' }"
-            >
-              <input
-                type="radio"
-                value="or"
-                v-model="localFilterModes.specials"
-              />
+            <label class="radio-option" :class="{ active: localFilterModes.specials === 'or' }">
+              <input v-model="localFilterModes.specials" type="radio" value="or" />
               <span>ИЛИ</span>
             </label>
-            <label
-              class="radio-option"
-              :class="{ active: localFilterModes.specials === 'and' }"
-            >
-              <input
-                type="radio"
-                value="and"
-                v-model="localFilterModes.specials"
-              />
+            <label class="radio-option" :class="{ active: localFilterModes.specials === 'and' }">
+              <input v-model="localFilterModes.specials" type="radio" value="and" />
               <span>И</span>
             </label>
           </div>
@@ -490,7 +470,7 @@ function toggleSortOrder() {
 }
 
 .section-title::after {
-  content: "";
+  content: '';
   flex: 1;
   height: 1px;
   background: var(--border-color);
