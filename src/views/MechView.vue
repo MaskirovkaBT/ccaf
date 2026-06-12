@@ -1,12 +1,87 @@
 <script setup>
-import { computed, onMounted, watch } from "vue";
-import { useCatalogStore } from "../stores/catalog.js";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useCatalogStore, getApiBase } from "../stores/catalog.js";
+import { getCachedImageBlobUrl } from "../utils/imageCache.js";
 
 const props = defineProps({ id: String });
 const store = useCatalogStore();
 
 const unit = computed(() => store.unit);
 const loading = computed(() => store.loading);
+
+const imageModalOpen = ref(false);
+const imageError = ref(false);
+const displayImageUrl = ref(null);
+const objectUrlToRevoke = ref(null);
+let currentImageRequestUrl = null;
+
+const resolvedImageUrl = computed(() => {
+  if (!unit.value?.image_url) return null;
+  const url = unit.value.image_url;
+  if (/^https?:\/\//i.test(url)) return url;
+  const base = getApiBase().replace(/\/$/, "");
+  return `${base}/${url.replace(/^\//, "")}`;
+});
+
+const hasImage = computed(() => !!resolvedImageUrl.value && !imageError.value);
+
+function openImageModal() {
+  if (hasImage.value) imageModalOpen.value = true;
+}
+
+function closeImageModal() {
+  imageModalOpen.value = false;
+}
+
+function onImageError() {
+  imageError.value = true;
+}
+
+async function updateDisplayImage(url) {
+  currentImageRequestUrl = url;
+
+  if (objectUrlToRevoke.value) {
+    URL.revokeObjectURL(objectUrlToRevoke.value);
+    objectUrlToRevoke.value = null;
+  }
+  displayImageUrl.value = null;
+
+  if (!url) return;
+
+  const blobUrl = await getCachedImageBlobUrl(url);
+
+  if (currentImageRequestUrl !== url) return;
+
+  if (blobUrl && blobUrl.startsWith("blob:")) {
+    objectUrlToRevoke.value = blobUrl;
+  }
+  displayImageUrl.value = blobUrl || url;
+}
+
+function onKeydown(e) {
+  if (e.key === "Escape") closeImageModal();
+}
+
+watch(imageModalOpen, (open) => {
+  if (open) document.addEventListener("keydown", onKeydown);
+  else document.removeEventListener("keydown", onKeydown);
+});
+
+watch(
+  () => unit.value?.image_url,
+  () => {
+    imageError.value = false;
+    imageModalOpen.value = false;
+  }
+);
+
+watch(
+  resolvedImageUrl,
+  (url) => {
+    updateDisplayImage(url);
+  },
+  { immediate: true }
+);
 
 const parsedSpecials = computed(() => {
   if (!unit.value?.specials) return [];
@@ -43,6 +118,14 @@ onMounted(() => {
   store.loadUnit(props.id);
 });
 
+onUnmounted(() => {
+  document.removeEventListener("keydown", onKeydown);
+  if (objectUrlToRevoke.value) {
+    URL.revokeObjectURL(objectUrlToRevoke.value);
+    objectUrlToRevoke.value = null;
+  }
+});
+
 watch(
   () => props.id,
   (newId) => {
@@ -77,6 +160,19 @@ watch(
           <span>БО {{ unit.pv }}</span>
           <span>ДВ {{ unit.mv }}</span>
         </div>
+      </div>
+
+      <div v-if="hasImage" class="image-section" @click="openImageModal">
+        <div class="image-frame">
+          <img
+            :src="displayImageUrl"
+            :alt="unit.title"
+            class="unit-thumb"
+            loading="lazy"
+            @error="onImageError"
+          />
+        </div>
+        <div class="image-hint">Нажмите для увеличения</div>
       </div>
 
       <div class="section">
@@ -194,6 +290,22 @@ watch(
       <div class="footer">
         <span>BATTLETECH: ALPHA STRIKE</span>
         <span>БО {{ unit.pv }} · РЗ {{ unit.sz }} · {{ unit.unit_type }}</span>
+      </div>
+
+      <div
+        v-if="imageModalOpen"
+        class="image-modal"
+        @click="closeImageModal"
+      >
+        <div class="image-modal-backdrop"></div>
+        <div class="image-modal-close" @click="closeImageModal">×</div>
+        <div class="image-modal-content" @click.stop>
+          <img
+            :src="displayImageUrl"
+            :alt="unit.title"
+            class="image-modal-img"
+          />
+        </div>
       </div>
     </div>
 
@@ -492,5 +604,142 @@ watch(
   padding: 20px;
   text-align: center;
   color: var(--text-dim);
+}
+
+.image-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+  position: relative;
+  background:
+    linear-gradient(90deg, rgba(0, 255, 65, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(0, 255, 65, 0.04) 1px, transparent 1px),
+    radial-gradient(ellipse at center, rgba(0, 255, 65, 0.05) 0%, transparent 70%),
+    var(--bg-secondary);
+  background-size: 18px 18px, 18px 18px, 100% 100%, 100% 100%;
+  cursor: pointer;
+}
+
+.image-section::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(0, 255, 65, 0.12);
+  pointer-events: none;
+}
+
+.image-frame {
+  position: relative;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  background: rgba(10, 15, 10, 0.6);
+}
+
+.image-frame::before,
+.image-frame::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--accent-green-dim);
+  pointer-events: none;
+}
+
+.image-frame::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.image-frame::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}
+
+.unit-thumb {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.image-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.image-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.92);
+}
+
+.image-modal-content {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  user-select: none;
+}
+
+.image-modal-img {
+  max-width: 100%;
+  max-height: calc(100vh - 64px);
+  object-fit: contain;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+@media (min-width: 480px) {
+  .unit-thumb {
+    max-height: 220px;
+  }
 }
 </style>
