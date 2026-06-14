@@ -6,7 +6,7 @@ import IconDice from './IconDice.vue'
 
 <template>
   <nav class="bottom-nav">
-    <router-link to="/" class="nav-item" :class="{ active: $route.name === 'search' }">
+    <router-link to="/search" class="nav-item" :class="{ active: $route.name === 'search' }">
       <IconSearch class="nav-icon" />
       <span>Поиск</span>
     </router-link>

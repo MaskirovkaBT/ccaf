@@ -48,6 +48,7 @@ function save() {
         />
         <p v-if="error" class="error-text">{{ error }}</p>
         <button class="btn" :disabled="!canSubmit" @click="save">Продолжить</button>
+        <router-link to="/" class="back-link">На главную</router-link>
       </div>
     </div>
   </div>
@@ -161,5 +162,19 @@ function save() {
   background: var(--border-color);
   color: var(--text-inactive);
   cursor: not-allowed;
+}
+
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--accent-green);
 }
 </style>

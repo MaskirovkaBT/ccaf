@@ -6,7 +6,7 @@
         <component :is="Component" />
       </Transition>
     </router-view>
-    <BottomNav v-if="$route.name !== 'setup'" />
+    <BottomNav v-if="!['setup', 'landing'].includes($route.name)" />
   </div>
 </template>
 
