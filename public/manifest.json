@@ -2,7 +2,7 @@
   "name": "ВС КК Помощник новобранца",
   "short_name": "Помощник новобранца",
   "description": "Помощник новобранца для BattleTech: Alpha Strike",
-  "start_url": "./",
+  "start_url": "./search",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0a0f0a",
