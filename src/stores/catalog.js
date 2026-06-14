@@ -194,7 +194,6 @@ export const useCatalogStore = defineStore('catalog', () => {
   // ---------- private helpers ----------
   async function apiGet(path) {
     const url = `${getApiBase()}${path}`
-    console.log('[API] GET', url)
     const res = await fetch(url)
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
     return res.json()
@@ -270,7 +269,6 @@ export const useCatalogStore = defineStore('catalog', () => {
   async function loadEras() {
     try {
       eras.value = await apiGet('/eras')
-      console.log('[API] eras loaded:', eras.value.length)
     } catch (err) {
       console.error('Failed to load eras:', err)
     }
@@ -279,7 +277,6 @@ export const useCatalogStore = defineStore('catalog', () => {
   async function loadFactions() {
     try {
       factions.value = await apiGet('/factions')
-      console.log('[API] factions loaded:', factions.value.length)
     } catch (err) {
       console.error('Failed to load factions:', err)
     }
@@ -288,7 +285,6 @@ export const useCatalogStore = defineStore('catalog', () => {
   async function loadRoles() {
     try {
       roles.value = await apiGet('/roles')
-      console.log('[API] roles loaded:', roles.value.length)
     } catch (err) {
       console.error('Failed to load roles:', err)
     }
@@ -297,7 +293,6 @@ export const useCatalogStore = defineStore('catalog', () => {
   async function loadTypes() {
     try {
       types.value = await apiGet('/types')
-      console.log('[API] types loaded:', types.value.length)
     } catch (err) {
       console.error('Failed to load types:', err)
     }
@@ -309,17 +304,14 @@ export const useCatalogStore = defineStore('catalog', () => {
     try {
       const { query, headers } = buildUnitsQuery()
       const url = `${getApiBase()}/units?${query}`
-      console.log('[API] GET', url)
       const res = await fetch(url, { headers })
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
       const payload = await res.json()
-      console.log('[API] units payload:', payload)
       const parsed = parsePageResponse(payload)
       units.value = parsed.items
       total.value = parsed.total
       page.value = parsed.page
       size.value = parsed.size
-      console.log('[API] units parsed:', parsed.items.length, 'of', parsed.total)
     } catch (err) {
       error.value = err.message
       units.value = []
@@ -335,7 +327,6 @@ export const useCatalogStore = defineStore('catalog', () => {
     error.value = null
     try {
       unit.value = await apiGet(`/units/${id}`)
-      console.log('[API] unit loaded:', unit.value?.title)
     } catch (err) {
       error.value = err.message
       unit.value = null
