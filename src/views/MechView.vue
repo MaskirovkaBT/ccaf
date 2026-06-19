@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCatalogStore, getApiBase } from '../stores/catalog.js'
 import { getCachedImageBlobUrl } from '../utils/imageCache.js'
 
@@ -10,6 +11,7 @@ const props = defineProps({
   },
 })
 const store = useCatalogStore()
+const router = useRouter()
 
 const unit = computed(() => store.unit)
 const loading = computed(() => store.loading)
@@ -115,6 +117,14 @@ function toggleHangar() {
   store.toggleHangar(props.id)
 }
 
+function goBack() {
+  if (router.options.history.state.back) {
+    router.back()
+  } else {
+    router.replace({ name: 'search' })
+  }
+}
+
 function barPct(val, max) {
   return Math.min(100, Math.round((val / max) * 100))
 }
@@ -143,7 +153,7 @@ watch(
   <div class="page">
     <div v-if="unit" class="card">
       <div class="header">
-        <div class="back-btn" @click="$router.back()">
+        <div class="back-btn" @click="goBack">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -305,7 +315,7 @@ watch(
     </div>
 
     <div v-else class="not-found">
-      <div class="back-btn" @click="$router.back()">
+      <div class="back-btn" @click="goBack">
         <svg
           viewBox="0 0 24 24"
           fill="none"
