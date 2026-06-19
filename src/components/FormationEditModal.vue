@@ -130,27 +130,41 @@ function init() {
     localType.value = draft.type || ''
     localUnitIds.value = Array.isArray(draft.units) ? draft.units.map(Number) : []
     localAbilities.value = draft.abilities ? JSON.parse(JSON.stringify(draft.abilities)) : {}
+    if (draft.activeTab) activeTab.value = draft.activeTab
+    if (draft.searchQuery != null) searchQuery.value = draft.searchQuery
+    if (draft.searchFilters) searchFilters.value = JSON.parse(JSON.stringify(draft.searchFilters))
+    if (draft.searchFilterModes)
+      searchFilterModes.value = JSON.parse(JSON.stringify(draft.searchFilterModes))
+    if (draft.searchSortBy) searchSortBy.value = draft.searchSortBy
+    if (draft.searchSortOrder) searchSortOrder.value = draft.searchSortOrder
+    if (Array.isArray(draft.searchResults)) searchResults.value = draft.searchResults
+    if (draft.searchPage) searchPage.value = draft.searchPage
+    if (draft.searchSize) searchSize.value = draft.searchSize
+    if (draft.searchTotal != null) searchTotal.value = draft.searchTotal
+    if (draft.searchPages) searchPages.value = draft.searchPages
     sessionStorage.removeItem('ccaf_formation_edit_draft')
-  } else if (props.formation) {
-    localName.value = props.formation.name || ''
-    localType.value = props.formation.type || ''
-    localUnitIds.value = Array.isArray(props.formation.units)
-      ? props.formation.units.map(Number)
-      : []
-    localAbilities.value = props.formation.abilities
-      ? JSON.parse(JSON.stringify(props.formation.abilities))
-      : {}
   } else {
-    localName.value = ''
-    localType.value = ''
-    localUnitIds.value = []
-    localAbilities.value = {}
+    if (props.formation) {
+      localName.value = props.formation.name || ''
+      localType.value = props.formation.type || ''
+      localUnitIds.value = Array.isArray(props.formation.units)
+        ? props.formation.units.map(Number)
+        : []
+      localAbilities.value = props.formation.abilities
+        ? JSON.parse(JSON.stringify(props.formation.abilities))
+        : {}
+    } else {
+      localName.value = ''
+      localType.value = ''
+      localUnitIds.value = []
+      localAbilities.value = {}
+    }
+    searchQuery.value = ''
+    searchResults.value = []
+    searchPage.value = 1
+    searchTotal.value = 0
+    searchPages.value = 1
   }
-  searchQuery.value = ''
-  searchResults.value = []
-  searchPage.value = 1
-  searchTotal.value = 0
-  searchPages.value = 1
 
   // Предзаполняем юниты из кэша синхронно, чтобы избежать пустого кадра при анимации
   if (localUnitIds.value.length) {
@@ -240,6 +254,17 @@ function openMech(unitId) {
       type: localType.value,
       units: localUnitIds.value,
       abilities: localAbilities.value,
+      activeTab: activeTab.value,
+      searchQuery: searchQuery.value,
+      searchFilters: searchFilters.value,
+      searchFilterModes: searchFilterModes.value,
+      searchSortBy: searchSortBy.value,
+      searchSortOrder: searchSortOrder.value,
+      searchResults: searchResults.value,
+      searchPage: searchPage.value,
+      searchSize: searchSize.value,
+      searchTotal: searchTotal.value,
+      searchPages: searchPages.value,
     })
   )
   router.push({ name: 'mech', params: { id: unitId } })
@@ -822,7 +847,12 @@ function nonCommandUnits() {
             Ничего не найдено
           </div>
           <div v-else class="unit-pick-list">
-            <div v-for="u in searchResults" :key="u.unit_id" class="unit-pick-row">
+            <div
+              v-for="u in searchResults"
+              :key="u.unit_id"
+              class="unit-pick-row"
+              @click="openMech(u.unit_id)"
+            >
               <div class="pick-icon">
                 <UnitIcon :type="u.unit_type" />
                 <span class="unit-weight-badge" :class="weightClassFromSz(u.sz)">
@@ -840,7 +870,7 @@ function nonCommandUnits() {
                 <span v-if="unitCountInFormation(u.unit_id)" class="count-badge">
                   {{ unitCountInFormation(u.unit_id) }}
                 </span>
-                <button class="btn-add-unit" @click="addUnit(u.unit_id)">+</button>
+                <button class="btn-add-unit" @click.stop="addUnit(u.unit_id)">+</button>
               </div>
             </div>
           </div>
