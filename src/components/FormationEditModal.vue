@@ -110,7 +110,28 @@ watch(searchQuery, q => {
 })
 
 function init() {
-  if (props.formation) {
+  const draftJson = sessionStorage.getItem('ccaf_formation_edit_draft')
+  let draft = null
+  if (draftJson) {
+    try {
+      draft = JSON.parse(draftJson)
+    } catch {
+      draft = null
+    }
+  }
+
+  const matchesDraft =
+    draft &&
+    ((draft.isNew && !props.formation) ||
+      (!draft.isNew && props.formation?.id === draft.formationId))
+
+  if (matchesDraft) {
+    localName.value = draft.name || ''
+    localType.value = draft.type || ''
+    localUnitIds.value = Array.isArray(draft.units) ? draft.units.map(Number) : []
+    localAbilities.value = draft.abilities ? JSON.parse(JSON.stringify(draft.abilities)) : {}
+    sessionStorage.removeItem('ccaf_formation_edit_draft')
+  } else if (props.formation) {
     localName.value = props.formation.name || ''
     localType.value = props.formation.type || ''
     localUnitIds.value = Array.isArray(props.formation.units)
@@ -130,6 +151,16 @@ function init() {
   searchPage.value = 1
   searchTotal.value = 0
   searchPages.value = 1
+
+  // Предзаполняем юниты из кэша синхронно, чтобы избежать пустого кадра при анимации
+  if (localUnitIds.value.length) {
+    resolvedUnits.value = localUnitIds.value
+      .map(id => store.formationUnitCache.get(Number(id)))
+      .filter(Boolean)
+  } else {
+    resolvedUnits.value = []
+  }
+
   resolveCurrentUnits()
 }
 
@@ -200,6 +231,17 @@ function addUnit(id) {
 }
 
 function openMech(unitId) {
+  sessionStorage.setItem(
+    'ccaf_formation_edit_draft',
+    JSON.stringify({
+      isNew: isNew.value,
+      formationId: props.formation?.id || null,
+      name: localName.value,
+      type: localType.value,
+      units: localUnitIds.value,
+      abilities: localAbilities.value,
+    })
+  )
   router.push({ name: 'mech', params: { id: unitId } })
 }
 

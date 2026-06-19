@@ -21,6 +21,21 @@ onMounted(async () => {
   await store.loadTypes()
   await store.loadHangarUnits()
   await loadAllFormationUnits()
+
+  const draftJson = sessionStorage.getItem('ccaf_formation_edit_draft')
+  if (draftJson) {
+    try {
+      const draft = JSON.parse(draftJson)
+      if (draft.isNew) {
+        editingFormation.value = null
+      } else {
+        editingFormation.value = formations.value.find(f => f.id === draft.formationId) ?? null
+      }
+      editModalOpen.value = true
+    } catch {
+      sessionStorage.removeItem('ccaf_formation_edit_draft')
+    }
+  }
 })
 
 async function loadAllFormationUnits() {
@@ -174,6 +189,7 @@ function formatEffect(text) {
 
 <style scoped>
 .page {
+  min-height: 100vh;
   padding-bottom: 60px;
 }
 
