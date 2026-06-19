@@ -5,28 +5,63 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const serverUrl = ref('')
 const error = ref('')
+const checking = ref(false)
 
-const canSubmit = computed(() => serverUrl.value.trim().length > 0)
+const canSubmit = computed(() => serverUrl.value.trim().length > 0 && !checking.value)
 
-function save() {
+async function probeUrl(url) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 3000)
+  try {
+    await fetch(url, { method: 'HEAD', signal: controller.signal, mode: 'no-cors' })
+    return true
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function resolveProtocol(base) {
+  const httpsUrl = `https://${base}`
+  const httpUrl = `http://${base}`
+
+  if (await probeUrl(`${httpsUrl}/eras`)) return httpsUrl
+  if (await probeUrl(`${httpUrl}/eras`)) return httpUrl
+  return null
+}
+
+async function save() {
   const url = serverUrl.value.trim()
   if (!url) {
     error.value = 'Введите адрес сервера'
     return
   }
 
-  // добавляем протокол, если забыли
-  let fixed = url
-  if (!/^https?:\/\//i.test(fixed)) {
-    fixed = 'http://' + fixed
-  }
-
-  // убираем trailing slash
-  fixed = fixed.replace(/\/$/, '')
-
-  localStorage.setItem('ccaf_api_url', fixed)
+  checking.value = true
   error.value = ''
-  router.replace({ name: 'search' })
+
+  try {
+    let fixed = url
+
+    if (!/^https?:\/\//i.test(fixed)) {
+      const base = fixed.replace(/\/$/, '')
+      const resolved = await resolveProtocol(base)
+      if (!resolved) {
+        error.value = 'Не удалось подключиться к серверу по http или https'
+        return
+      }
+      fixed = resolved
+    }
+
+    // убираем trailing slash
+    fixed = fixed.replace(/\/$/, '')
+
+    localStorage.setItem('ccaf_api_url', fixed)
+    router.replace({ name: 'search' })
+  } finally {
+    checking.value = false
+  }
 }
 </script>
 
@@ -41,13 +76,18 @@ function save() {
         <label class="label">Адрес сервера</label>
         <input
           v-model="serverUrl"
-          type="text"
-          placeholder="http://localhost:8000"
+          type="url"
+          inputmode="url"
+          autocomplete="url"
+          placeholder="localhost:8000"
           class="input"
           @keyup.enter="save"
         />
+        <p class="hint-text">Протокол http:// или https:// добавится автоматически</p>
         <p v-if="error" class="error-text">{{ error }}</p>
-        <button class="btn" :disabled="!canSubmit" @click="save">Продолжить</button>
+        <button class="btn" :disabled="!canSubmit" @click="save">
+          {{ checking ? 'Проверка...' : 'Продолжить' }}
+        </button>
         <router-link to="/" class="back-link">На главную</router-link>
       </div>
     </div>
@@ -130,6 +170,12 @@ function save() {
 .error-text {
   font-size: 11px;
   color: var(--accent-red);
+  margin: 0;
+}
+
+.hint-text {
+  font-size: 10px;
+  color: var(--text-dim);
   margin: 0;
 }
 

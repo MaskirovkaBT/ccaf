@@ -143,7 +143,18 @@ watch(
   <div class="page">
     <div v-if="unit" class="card">
       <div class="header">
-        <div class="back-btn" @click="$router.back()">←</div>
+        <div class="back-btn" @click="$router.back()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="square"
+            stroke-linejoin="miter"
+          >
+            <polyline points="14,5 7,12 14,19"></polyline>
+          </svg>
+        </div>
         <div class="header-top">
           <div>
             <div class="mech-name">{{ unit.title }}</div>
@@ -294,7 +305,18 @@ watch(
     </div>
 
     <div v-else class="not-found">
-      <div class="back-btn" @click="$router.back()">←</div>
+      <div class="back-btn" @click="$router.back()">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linecap="square"
+          stroke-linejoin="miter"
+        >
+          <polyline points="14,5 7,12 14,19"></polyline>
+        </svg>
+      </div>
       <p>Юнит не найден</p>
     </div>
   </div>
@@ -314,16 +336,26 @@ watch(
 }
 
 .back-btn {
-  font-size: 11px;
   color: var(--text-dim);
-  letter-spacing: 1px;
   margin-bottom: 8px;
   cursor: pointer;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-color);
+  user-select: none;
+}
+
+.back-btn svg {
+  width: 22px;
+  height: 22px;
 }
 
 .back-btn:hover {
   color: var(--accent-green);
+  border-color: var(--accent-green);
 }
 
 .hangar-toggle {
