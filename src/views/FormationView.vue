@@ -38,7 +38,8 @@ const formationsWithMeta = computed(() => {
     const type = getFormationType(f.type)
     const units = (f.units || []).map(id => formationUnitsMap.value.get(Number(id))).filter(Boolean)
     const isValid = units.length >= 3
-    return { ...f, typeMeta: type, units, isValid }
+    const totalPv = units.reduce((sum, u) => sum + (u.pv || 0), 0)
+    return { ...f, typeMeta: type, units, isValid, totalPv }
   })
 })
 
@@ -155,7 +156,7 @@ function formatEffect(text) {
         </div>
 
         <div class="card-footer">
-          <span>БЕ: {{ f.units.length }}</span>
+          <span>БЕ: {{ f.units.length }} · БО: {{ f.totalPv }}</span>
           <span v-if="f.typeMeta?.optimalRole"> Опт. роль: {{ f.typeMeta.optimalRole }} </span>
         </div>
       </div>

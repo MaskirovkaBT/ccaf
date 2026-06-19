@@ -151,6 +151,7 @@ const groundTypes = computed(() => formationTypes.filter(f => f.category === 'gr
 const airTypes = computed(() => formationTypes.filter(f => f.category === 'air'))
 
 const unitCount = computed(() => resolvedUnits.value.length)
+const totalPv = computed(() => resolvedUnits.value.reduce((sum, u) => sum + (u.pv || 0), 0))
 const hasTooFewUnits = computed(() => unitCount.value > 0 && unitCount.value < 3)
 
 const optimalRoleMatch = computed(() => {
@@ -669,6 +670,9 @@ function nonCommandUnits() {
               — менее 3 действующих БЕ, эффект не действует (стр. 156)
             </span>
           </div>
+          <div class="status-line">
+            Стоимость: <strong>{{ totalPv }}</strong> БО
+          </div>
           <div v-if="optimalRoleMatch" class="status-line">
             Оптимальная роль «{{ optimalRoleMatch.role }}»:
             <strong>{{ optimalRoleMatch.count }}</strong> / {{ unitCount }}
@@ -695,7 +699,7 @@ function nonCommandUnits() {
             <div class="pick-info">
               <div class="pick-name">{{ u.title }}</div>
               <div class="pick-meta">
-                {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · Роль:
+                {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · БО {{ u.pv }} · Роль:
                 {{ translateRole(u.role) }}
               </div>
             </div>
@@ -738,7 +742,7 @@ function nonCommandUnits() {
               <div class="pick-info">
                 <div class="pick-name">{{ u.title }}</div>
                 <div class="pick-meta">
-                  {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · Роль:
+                  {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · БО {{ u.pv }} · Роль:
                   {{ translateRole(u.role) }}
                 </div>
               </div>
@@ -786,7 +790,7 @@ function nonCommandUnits() {
               <div class="pick-info">
                 <div class="pick-name">{{ u.title }}</div>
                 <div class="pick-meta">
-                  {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · Роль:
+                  {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · БО {{ u.pv }} · Роль:
                   {{ translateRole(u.role) }}
                 </div>
               </div>
