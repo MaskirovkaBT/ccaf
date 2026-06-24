@@ -338,6 +338,7 @@ function toggleSortOrder() {
   max-height: 85vh;
   max-height: calc(var(--vh, 1vh) * 85);
   max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
+  max-height: 85svh;
   background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border-top: 1px solid var(--border-color);
   display: flex;

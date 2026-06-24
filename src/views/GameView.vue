@@ -941,6 +941,7 @@ function barColor(current, max) {
   max-height: 70vh;
   max-height: calc(var(--vh, 1vh) * 70);
   max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
+  max-height: 70svh;
   background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border-top: 1px solid var(--border-color);
   display: flex;

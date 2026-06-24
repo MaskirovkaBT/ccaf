@@ -14,8 +14,17 @@
 import { onMounted, onUnmounted } from 'vue'
 import BottomNav from './components/BottomNav.vue'
 
+// Минимальная высота viewport, которую мы наблюдали.
+// Нужна для браузеров с динамическими панелями (Яндекс.Браузер, Chrome мобильный),
+// чтобы модалки не вылезали за видимую область, когда панель скрыта.
+let minViewportHeight = Infinity
+
 function updateVh() {
-  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`)
+  const visualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight
+  if (visualHeight && visualHeight > 0) {
+    minViewportHeight = Math.min(minViewportHeight, visualHeight)
+    document.documentElement.style.setProperty('--vh', `${minViewportHeight * 0.01}px`)
+  }
 }
 
 let resizeObserver = null
@@ -23,7 +32,9 @@ let resizeObserver = null
 onMounted(() => {
   updateVh()
   window.addEventListener('resize', updateVh)
-  // Также обновляем при появлении/скрытии панелей браузера на мобильных
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateVh)
+  }
   if ('ResizeObserver' in window) {
     resizeObserver = new ResizeObserver(updateVh)
     resizeObserver.observe(document.documentElement)
@@ -32,6 +43,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateVh)
+  if (window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', updateVh)
+  }
   if (resizeObserver) resizeObserver.disconnect()
 })
 </script>
