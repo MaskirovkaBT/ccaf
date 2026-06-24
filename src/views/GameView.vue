@@ -383,6 +383,9 @@ function barColor(current, max) {
             </div>
           </div>
         </div>
+        <div class="modal-footer">
+          <button class="btn-reset" @click="showAddModal = false">ЗАКРЫТЬ</button>
+        </div>
       </div>
     </div>
   </div>
@@ -918,11 +921,17 @@ function barColor(current, max) {
 .modal-overlay {
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior: contain;
   z-index: 110;
 }
 
@@ -930,6 +939,8 @@ function barColor(current, max) {
   width: 100%;
   max-width: 480px;
   max-height: 70vh;
+  max-height: calc(var(--vh, 1vh) * 70);
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
   background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border-top: 1px solid var(--border-color);
   display: flex;
@@ -970,19 +981,28 @@ function barColor(current, max) {
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-dim);
-  width: 28px;
-  height: 28px;
-  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
   color: var(--accent-red);
   border-color: var(--accent-red);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .modal-body {

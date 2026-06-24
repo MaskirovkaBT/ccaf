@@ -11,7 +11,29 @@
 </template>
 
 <script setup>
+import { onMounted, onUnmounted } from 'vue'
 import BottomNav from './components/BottomNav.vue'
+
+function updateVh() {
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`)
+}
+
+let resizeObserver = null
+
+onMounted(() => {
+  updateVh()
+  window.addEventListener('resize', updateVh)
+  // Также обновляем при появлении/скрытии панелей браузера на мобильных
+  if ('ResizeObserver' in window) {
+    resizeObserver = new ResizeObserver(updateVh)
+    resizeObserver.observe(document.documentElement)
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateVh)
+  if (resizeObserver) resizeObserver.disconnect()
+})
 </script>
 
 <style scoped>
@@ -19,6 +41,7 @@ import BottomNav from './components/BottomNav.vue'
   position: relative;
   width: 100%;
   min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
   background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
   overflow-x: hidden;
 }
