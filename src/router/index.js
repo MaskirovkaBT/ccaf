@@ -4,7 +4,7 @@ import LandingView from '../views/LandingView.vue'
 import SearchView from '../views/SearchView.vue'
 import MechView from '../views/MechView.vue'
 import FormationView from '../views/FormationView.vue'
-import DataView from '../views/DataView.vue'
+import GameView from '../views/GameView.vue'
 
 const routes = [
   { path: '/setup', name: 'setup', component: SetupView },
@@ -12,7 +12,7 @@ const routes = [
   { path: '/search', name: 'search', component: SearchView },
   { path: '/mech/:id', name: 'mech', component: MechView, props: true },
   { path: '/force', name: 'force', component: FormationView },
-  { path: '/data', name: 'data', component: DataView },
+  { path: '/game', name: 'game', component: GameView },
 ]
 
 const router = createRouter({
@@ -22,7 +22,7 @@ const router = createRouter({
 
 router.beforeEach(to => {
   const hasServer = !!localStorage.getItem('ccaf_api_url')
-  const appRoutes = ['search', 'mech', 'force', 'data']
+  const appRoutes = ['search', 'mech', 'force', 'game']
   if (!hasServer && appRoutes.includes(to.name)) {
     return { name: 'setup', replace: true }
   }

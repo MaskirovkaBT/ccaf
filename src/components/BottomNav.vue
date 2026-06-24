@@ -14,7 +14,7 @@ import IconDice from './IconDice.vue'
       <IconForce class="nav-icon" />
       <span>Формации</span>
     </router-link>
-    <router-link to="/data" class="nav-item" :class="{ active: $route.name === 'data' }">
+    <router-link to="/game" class="nav-item" :class="{ active: $route.name === 'game' }">
       <IconDice class="nav-icon" />
       <span>Игра</span>
     </router-link>

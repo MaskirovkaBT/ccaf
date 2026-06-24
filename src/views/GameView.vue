@@ -147,7 +147,7 @@ function barColor(current, max) {
 </script>
 
 <template>
-  <div class="data-view">
+  <div class="game-view">
     <div class="game-header">
       <div class="game-title">ТЕКУЩАЯ ПАРТИЯ</div>
       <div class="game-stats">
@@ -386,7 +386,7 @@ function barColor(current, max) {
 </template>
 
 <style scoped>
-.data-view {
+.game-view {
   padding: 14px;
   padding-bottom: 80px;
   display: flex;
