@@ -1,13 +1,36 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getCritCategory } from '../data/critTables.js'
+import { DEFAULT_PILOT_SKILL, adjustedUnitPv } from '../utils/pilotSkill.js'
 
 const STORAGE_KEY = 'ccaf_active_game'
+
+function migrateUnit(unit) {
+  if (unit == null) return unit
+  if (unit.skill == null) {
+    unit.skill = DEFAULT_PILOT_SKILL
+  }
+  if (unit.basePv == null) {
+    unit.basePv = unit.pv || 0
+  }
+  unit.pv = adjustedUnitPv(unit.basePv, unit.skill)
+  return unit
+}
 
 function loadGame() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const game = JSON.parse(raw)
+      if (game && Array.isArray(game.rosters)) {
+        game.rosters.forEach(roster => {
+          if (Array.isArray(roster.units)) {
+            roster.units.forEach(migrateUnit)
+          }
+        })
+      }
+      return game
+    }
   } catch {
     // ignore parse error
   }
@@ -40,16 +63,19 @@ function generateInstanceId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
 }
 
-export function createGameUnit(unit) {
+export function createGameUnit(unit, skill = DEFAULT_PILOT_SKILL) {
   const baseMv = parseMv(unit.mv)
   const category = getCritCategory(unit.unit_type)
+  const basePv = unit.pv || 0
   return {
     instanceId: generateInstanceId(),
     unitId: unit.unit_id,
     title: unit.title,
     unitType: unit.unit_type,
     role: unit.role,
-    pv: unit.pv || 0,
+    basePv,
+    pv: adjustedUnitPv(basePv, skill),
+    skill: Number(skill),
     sz: unit.sz || 1,
     baseMv,
     isJump: isJumpMove(unit.mv),
@@ -249,7 +275,12 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function addRoster(formation, resolvedUnits) {
-    const units = (resolvedUnits || []).map(u => createGameUnit(u))
+    const skillMap = formation?.pilotSkills || {}
+    const units = (resolvedUnits || []).map(u => {
+      const uid = u.unit_id
+      const skill = skillMap[String(uid)] ?? skillMap[uid] ?? DEFAULT_PILOT_SKILL
+      return createGameUnit(u, skill)
+    })
     units.forEach(u => recalcUnit(u))
     activeGame.value.rosters.push({
       formationId: formation.id,

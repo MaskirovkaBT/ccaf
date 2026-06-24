@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useCatalogStore } from '../stores/catalog.js'
 import { getFormationType } from '../data/formations.js'
 import { translateRole } from '../data/roleMap.js'
+import { adjustedUnitPv } from '../utils/pilotSkill.js'
 import FormationEditModal from '../components/FormationEditModal.vue'
 import UnitIcon from '../components/UnitIcon.vue'
 
@@ -53,7 +54,11 @@ const formationsWithMeta = computed(() => {
     const type = getFormationType(f.type)
     const units = (f.units || []).map(id => formationUnitsMap.value.get(Number(id))).filter(Boolean)
     const isValid = units.length >= 3
-    const totalPv = units.reduce((sum, u) => sum + (u.pv || 0), 0)
+    const pilotSkills = f.pilotSkills || {}
+    const totalPv = units.reduce((sum, u) => {
+      const skill = pilotSkills[String(u.unit_id)] ?? pilotSkills[u.unit_id]
+      return sum + adjustedUnitPv(u.pv, skill)
+    }, 0)
     return { ...f, typeMeta: type, units, isValid, totalPv }
   })
 })

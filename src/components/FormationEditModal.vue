@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useCatalogStore } from '../stores/catalog.js'
 import { getFormationType, formationTypes } from '../data/formations.js'
 import { translateRole } from '../data/roleMap.js'
 import { getApiBase } from '../stores/catalog.js'
+import { DEFAULT_PILOT_SKILL, PILOT_SKILL_OPTIONS, adjustedUnitPv } from '../utils/pilotSkill.js'
 import UnitIcon from './UnitIcon.vue'
 import FilterModal from './FilterModal.vue'
 
@@ -26,6 +28,7 @@ const localType = ref('')
 const localUnitIds = ref([])
 const resolvedUnits = ref([])
 const localAbilities = ref({})
+const localPilotSkills = ref({})
 
 // UI state
 const activeTab = ref('hangar') // 'hangar' | 'search'
@@ -130,6 +133,7 @@ function init() {
     localType.value = draft.type || ''
     localUnitIds.value = Array.isArray(draft.units) ? draft.units.map(Number) : []
     localAbilities.value = draft.abilities ? JSON.parse(JSON.stringify(draft.abilities)) : {}
+    localPilotSkills.value = draft.pilotSkills ? JSON.parse(JSON.stringify(draft.pilotSkills)) : {}
     if (draft.activeTab) activeTab.value = draft.activeTab
     if (draft.searchQuery != null) searchQuery.value = draft.searchQuery
     if (draft.searchFilters) searchFilters.value = JSON.parse(JSON.stringify(draft.searchFilters))
@@ -153,11 +157,15 @@ function init() {
       localAbilities.value = props.formation.abilities
         ? JSON.parse(JSON.stringify(props.formation.abilities))
         : {}
+      localPilotSkills.value = props.formation.pilotSkills
+        ? JSON.parse(JSON.stringify(props.formation.pilotSkills))
+        : {}
     } else {
       localName.value = ''
       localType.value = ''
       localUnitIds.value = []
       localAbilities.value = {}
+      localPilotSkills.value = {}
     }
     searchQuery.value = ''
     searchResults.value = []
@@ -165,6 +173,9 @@ function init() {
     searchTotal.value = 0
     searchPages.value = 1
   }
+
+  ensureUnitSkills()
+  cleanOrphanSkills()
 
   // Предзаполняем юниты из кэша синхронно, чтобы избежать пустого кадра при анимации
   if (localUnitIds.value.length) {
@@ -196,8 +207,36 @@ const groundTypes = computed(() => formationTypes.filter(f => f.category === 'gr
 const airTypes = computed(() => formationTypes.filter(f => f.category === 'air'))
 
 const unitCount = computed(() => resolvedUnits.value.length)
-const totalPv = computed(() => resolvedUnits.value.reduce((sum, u) => sum + (u.pv || 0), 0))
+const totalPv = computed(() =>
+  resolvedUnits.value.reduce((sum, u) => sum + adjustedUnitPv(u.pv, getUnitSkill(u.unit_id)), 0)
+)
 const hasTooFewUnits = computed(() => unitCount.value > 0 && unitCount.value < 3)
+
+function getUnitSkill(unitId) {
+  return localPilotSkills.value[String(unitId)] ?? DEFAULT_PILOT_SKILL
+}
+
+function setUnitSkill(unitId, skill) {
+  localPilotSkills.value[String(unitId)] = Number(skill)
+}
+
+function ensureUnitSkills() {
+  localUnitIds.value.forEach(id => {
+    const key = String(id)
+    if (localPilotSkills.value[key] == null) {
+      localPilotSkills.value[key] = DEFAULT_PILOT_SKILL
+    }
+  })
+}
+
+function cleanOrphanSkills() {
+  const activeIds = new Set(localUnitIds.value.map(id => String(id)))
+  Object.keys(localPilotSkills.value).forEach(key => {
+    if (!activeIds.has(key)) {
+      delete localPilotSkills.value[key]
+    }
+  })
+}
 
 const optimalRoleMatch = computed(() => {
   const role = selectedType.value?.optimalRole
@@ -241,7 +280,12 @@ function ensureAbilityDefaults() {
 watch(selectedType, ensureAbilityDefaults)
 
 function addUnit(id) {
-  localUnitIds.value.push(Number(id))
+  const numId = Number(id)
+  localUnitIds.value.push(numId)
+  const key = String(numId)
+  if (localPilotSkills.value[key] == null) {
+    localPilotSkills.value[key] = DEFAULT_PILOT_SKILL
+  }
 }
 
 function openMech(unitId) {
@@ -254,6 +298,7 @@ function openMech(unitId) {
       type: localType.value,
       units: localUnitIds.value,
       abilities: localAbilities.value,
+      pilotSkills: localPilotSkills.value,
       activeTab: activeTab.value,
       searchQuery: searchQuery.value,
       searchFilters: searchFilters.value,
@@ -285,6 +330,7 @@ function removeUnit(idx) {
   ) {
     localAbilities.value.commanderUnitId = null
   }
+  cleanOrphanSkills()
 }
 
 function unitCountInFormation(unitId) {
@@ -448,11 +494,13 @@ function close() {
 }
 
 function save() {
+  cleanOrphanSkills()
   const payload = {
     name: localName.value.trim() || (selectedType.value?.name ?? 'Новая формация'),
     type: localType.value,
     units: localUnitIds.value.map(Number),
     abilities: JSON.parse(JSON.stringify(localAbilities.value)),
+    pilotSkills: JSON.parse(JSON.stringify(localPilotSkills.value)),
   }
   emit('save', payload)
 }
@@ -766,10 +814,31 @@ function nonCommandUnits() {
             <div class="pick-info">
               <div class="pick-name">{{ u.title }}</div>
               <div class="pick-meta">
-                {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · БО {{ u.pv }} · Роль:
-                {{ translateRole(u.role) }}
+                {{ u.unit_type }} · РЗ {{ u.sz }} · ДВ {{ u.mv }} · БО
+                {{ adjustedUnitPv(u.pv, getUnitSkill(u.unit_id)) }}
+                <span v-if="getUnitSkill(u.unit_id) !== DEFAULT_PILOT_SKILL" class="changed-stat">
+                  (база {{ u.pv }})
+                </span>
+                · Роль: {{ translateRole(u.role) }}
               </div>
             </div>
+            <label class="skill-label" title="Навык пилота/экипажа">
+              <span>Навык</span>
+              <select
+                class="skill-select"
+                :value="String(getUnitSkill(u.unit_id))"
+                @click.stop
+                @change="setUnitSkill(u.unit_id, $event.target.value)"
+              >
+                <option
+                  v-for="opt in PILOT_SKILL_OPTIONS"
+                  :key="opt.value"
+                  :value="String(opt.value)"
+                >
+                  {{ opt.value }}
+                </option>
+              </select>
+            </label>
             <button class="btn-remove-unit" @click.stop="removeUnit(idx)">×</button>
           </div>
         </div>
@@ -1427,6 +1496,44 @@ function nonCommandUnits() {
 
 .btn-remove-unit:hover {
   border-color: var(--accent-red);
+}
+
+.skill-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.skill-label span {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.skill-select {
+  width: 48px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 4px 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.skill-select:hover,
+.skill-select:focus {
+  border-color: var(--accent-green);
+}
+
+.changed-stat {
+  color: var(--accent-orange);
 }
 
 /* Search */

@@ -219,6 +219,9 @@ function barColor(current, max) {
                   <span v-if="unit.baseMv !== unit.currentMv" class="changed-stat"
                     >(было {{ unit.baseMv }})</span
                   >
+                  <span class="skill-badge" title="Навык пилота/экипажа">
+                    Навык {{ unit.skill }}
+                  </span>
                   <span v-if="unit.toHitMod" class="mod-badge">Попадание +{{ unit.toHitMod }}</span>
                   <span v-if="unit.toHitModMelee" class="mod-badge"
                     >Ближний бой +{{ unit.toHitModMelee }}</span
@@ -654,6 +657,13 @@ function barColor(current, max) {
   font-size: 9px;
   color: var(--accent-red);
   border: 1px solid var(--accent-red);
+  padding: 0 4px;
+}
+
+.skill-badge {
+  font-size: 9px;
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
   padding: 0 4px;
 }
 
